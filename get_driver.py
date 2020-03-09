@@ -8,6 +8,7 @@ from selenium import common
 from check_internet import test_connection
 import os
 import re
+from platform import system
 
 
 def get_driver(url, url_pattern):
@@ -38,10 +39,12 @@ def get_driver(url, url_pattern):
 def open_driver():
     """sub-function which handles all driver related setup"""
     driver_name = 'chromedriver'
+    if system() == 'Windows':
+        driver_name += '.exe'
     driver_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), driver_name)
     try:
         if not os.path.exists(driver_path):
-            raise FileNotFoundError("Appropriate driver not found\nPlease verify you are using Google Chrome"
+            raise FileNotFoundError("Appropriate driver not found\nPlease verify you are using Google Chrome "
                                     "and have the version specific driver in the same folder as this program")
         driver = webdriver.Chrome(driver_path)
     except FileNotFoundError as DriverError:

@@ -10,13 +10,15 @@ DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
 
 
 def format_card(data):
-    """Format the raw input scrapped from card webpage and return it as dictionary"""
+    """Format the raw input scrapped from card web-page and return it as dictionary"""
     data = [item.text for item in data][0].split('\n')
     data = {data[i]: data[i + 1] for i in range(0, len(data), 2)}
     try:
         data['Cost'] = int(data['Cost'].split()[0])
     except ValueError:
         data['Cost'] = 0
+    except KeyError:
+        data['Cost'] = int(data['GLOBAL_COST'].split()[0])
     return data
 
 
