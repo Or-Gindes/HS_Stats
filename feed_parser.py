@@ -73,7 +73,7 @@ def feed_parser():
             continue
 
         # Appending each game summary to the list feed_summary
-        if left_players_win_lose == 1:
+        if left_players_win_lose[i] == 1:
             feed_summary.append((game_links[i], (player_left_decks[i], player_left_ranks[i]), (player_right_decks[i],
                                                                                                player_right_ranks[i])))
         else:

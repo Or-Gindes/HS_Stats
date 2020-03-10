@@ -14,7 +14,7 @@
 
 
 ### Requirements
-* The project requires the following:
+The project requires the following:
   * The selenium package. 
   * Google Chrome, if you aren't already using it.
   * After installing Google Chrome, install chromedriver: 
@@ -58,7 +58,7 @@ Each card has many attributes:
 
 ### Challenges 
 
-* Reproducibility in different operating systems.
+* Compatibility with different operating systems.
 * Figuring out how to extract the required data from a dynamic environment.
 * Scraping data from a match where both sides have the same class.
 
