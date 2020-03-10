@@ -3,6 +3,7 @@
 ## Data Mining Project by Or Gindes, Dor Sklar
 
 ### Contents 
+* Requirements
 * Intro
 * What is the project about ?
 * What questions do we want answers for ?
@@ -10,6 +11,16 @@
 * Challenges
 * Insights and conclusions
 * Additional Sources of information
+
+
+### Requirements
+* The project requires the following:
+  * The selenium package. 
+  * Google Chrome, if you aren't already using it.
+  * After installing Google Chrome, install chromedriver: 
+    * Firstly, check your Google Chrome version here: https://www.whatismybrowser.com/detect/what-version-of-chrome-do-i-have 
+    * Then, download the appropriate chromedriver.exe according to your version here: https://chromedriver.chromium.org/
+
 
 ### Intro 
 
@@ -34,12 +45,13 @@ Each card has many attributes:
 
 ### What questions do we ask  ? 
 
-
+* What is the most commonly used class ? 
+* TBC
 
 ### Where do we go to then ?
 
 * We used the website 'http://hsreplay.net', which serves as a statistical monitor of the game and holds many kinds of data.
-    * We parsed the live feed (updated about every second) to get the players' decks.
+    * We parsed the live game feed (updated about every second) to get the players' decks.
     * We parsed the decks to get the card names that it consists of.
     * For each card in the players' decks, we extracted its useful info.
 
@@ -47,6 +59,8 @@ Each card has many attributes:
 ### Challenges 
 
 * Reproducibility in different operating systems.
+* Figuring out how to extract the required data from a dynamic environment.
+* Scraping data from a match where both sides have the same class.
 
 ### Insights and conclusions 
 
@@ -57,3 +71,5 @@ Each card has many attributes:
 * https://www.itc.tech/web-scraping-with-python-a-to-z/ (Web scraping blog, by Eitan Kassuto and Shai Ardazi)
 * https://selenium-python.readthedocs.io/
 * Cohort Fellows : ) 
+
+
