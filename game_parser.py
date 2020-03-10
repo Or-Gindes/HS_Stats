@@ -6,6 +6,7 @@ from card_mine import card_mine
 from get_driver import get_driver
 from _collections import defaultdict
 from selenium.common.exceptions import NoSuchElementException
+from time import sleep
 
 URL_PATTERN = r'https://hsreplay.net/replay'
 
@@ -28,20 +29,13 @@ def get_card(link):
     return card_name, card_dict, cost, count
 
 
-def format_deck(deck, decks):
+def format_deck(win_or_lose_deck, collected_deck):
     """Format a given deck into a dictionary"""
-    name, class_name = deck[0].rsplit(' ', 1)[0], deck[0].rsplit(' ', 1)[1]
-    if decks[0] == class_name:
-        cards = decks[len(decks) // 2 - 1]
-        deck_cost = decks[1]
-        deck_card_cost = decks[2]
-
-    else:
-        cards = decks[-1]
-        deck_cost = decks[-3]
-        deck_card_cost = decks[-2]
-    return {'Deck': name, 'Class': class_name, 'Player Rank': deck[1], 'Deck Cost': deck_cost,
-            'Average Card Cost': deck_card_cost / 30, 'Cards': cards}
+    name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
+    return {'Deck': name, 'Class': class_name, 'Player Rank': win_or_lose_deck[1],
+            'Deck Cost': collected_deck['Deck Cost'],
+            'Average Card Cost': round(collected_deck['Total Mana Cost'] / 30, 2),
+            'Cards': collected_deck['Cards']}
 
 
 def get_decks(driver, winner_deck, loser_deck):
@@ -49,24 +43,26 @@ def get_decks(driver, winner_deck, loser_deck):
     :return: use sub-function to mine cards based on links, format decks and return them with added information
     """
     match_info = driver.find_elements_by_class_name("card-list")
-    i = 0
-    # define two decks per match
-    decks = ['Neutral', 0, 0, defaultdict(int), 'Neutral', 0, 0, defaultdict(int)]
-    for deck_in_match in match_info:  # two decks in each match
+    for deck_in_match in match_info:
+        # define an empty deck to be filled and later format against winner/loser input
+        deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
         for link in links:
             card_name, card_dict, card_cost, count = get_card(link)
             card_dict['Mana Cost'] = card_cost
-            if decks[i] == 'Neutral' and card_dict['Class'] != 'Neutral':
-                decks[i] = card_dict['Class']
-            decks[i + 1] += (card_dict['Cost'] * count)
+            if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
+                deck['Class'] = card_dict['Class']
+            deck['Deck Cost'] += (card_dict['Cost'] * count)
+            deck['Total Mana Cost'] += (card_cost * count)
+            deck['Cards'][card_name] += count
+            # This data isn't currently collected but will be used to build a card database at a later checkpoint
             print(card_name, card_dict, count)
-            decks[i + 2] += card_cost
-            decks[i + 3][card_name] += count
-        i += len(decks) // 2
-    winner_deck = format_deck(winner_deck, decks)
-    loser_deck = format_deck(loser_deck, decks)
-    return winner_deck, loser_deck
+        # Check if class of collected deck matches winner or loser deck and format the match
+        if deck['Class'] in winner_deck[0]:
+            winning_deck = format_deck(winner_deck, deck)
+        else:
+            losing_deck = format_deck(loser_deck, deck)
+    return winning_deck, losing_deck
 
 
 def game_parser(url, winner_deck, loser_deck):
@@ -80,7 +76,7 @@ def game_parser(url, winner_deck, loser_deck):
     if driver is False:
         # right now function is set to return False and not exit() so as to not disrupt main scraping function
         return False
-    # sleep(5)  # Sleep is not required but recommended by some user guides
+    sleep(10)  # Sleep is not required but useful when internet is unstable
     winner_deck, loser_deck = get_decks(driver, winner_deck, loser_deck)
     driver.quit()
     return winner_deck, loser_deck
@@ -89,7 +85,7 @@ def game_parser(url, winner_deck, loser_deck):
 def main():
     """Function used to test game_parser function"""
     game_url = 'https://hsreplay.net/replay/X4xfuTityKW6sYoDEGF2hD'
-    winner_deck, loser_deck = game_parser(game_url, ['Highlander Warrior', '1'], ['Dragon Hunter', 'Legend 1000'])
+    winner_deck, loser_deck = game_parser(game_url, ('Highlander Warrior', '1'), ('Dragon Hunter', 'Legend 1000'))
     print("The Winning Deck of the match is:")
     print(winner_deck)
     print("The Losing Deck of the match is:")
