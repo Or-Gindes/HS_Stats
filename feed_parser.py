@@ -2,7 +2,6 @@
 
 
 from get_driver import get_driver
-from time import sleep
 
 URL_PATTERN = 'https://hsreplay.net/'
 
@@ -22,38 +21,39 @@ def feed_parser():
     :return: a list, as described above.
     """
 
+    # Opening the browser and finding elements, extraction occurs below.
     driver = get_driver('https://hsreplay.net/', URL_PATTERN)
-    sleep(2)
+    elements1 = driver.find_elements_by_xpath("//a[@class='replay-feed-item']")
+    elements2 = driver.find_elements_by_xpath("//figure[@class='rank-icon-standalone']/img")
+    elements3 = driver.find_elements_by_xpath("//div[@class='replay-feed-player player-left']/span")
+    elements4 = driver.find_elements_by_xpath("//div[@class='replay-feed-player player-right']/span")
+    elements5 = driver.find_elements_by_xpath("//div[@class='replay-feed-player player-left']")
 
     """
-    Extracting the required data.
+    Extracting the required data - taking the 10 last games because of the dynamic feed. 
     """
 
     # getting the list of links to the game matches (game 1 link, game 2 link etc..)
-    elements = driver.find_elements_by_xpath("//a[@class='replay-feed-item']")
-    game_links = [elem.get_attribute("href") for elem in elements]
+    game_links = [elem.get_attribute("href") for elem in elements1[9:]]
 
     # player ranks (game left 1, game right 1, game left 2, game right 2...)
-    elements = driver.find_elements_by_xpath("//figure[@class='rank-icon-standalone']/img")
-    player_ranks = [elem.get_attribute("alt") for elem in elements]
+    player_ranks = [elem.get_attribute("alt") for elem in elements2[9:]]
 
     # player decks (left players)
-    elements = driver.find_elements_by_xpath("//div[@class='replay-feed-player player-left']/span")
-    player_left_decks = [elem.get_attribute('innerHTML') for elem in elements]
+    player_left_decks = [elem.get_attribute('innerHTML') for elem in elements3[9:]]
 
     # player decks (right players)
-    elements = driver.find_elements_by_xpath("//div[@class='replay-feed-player player-right']/span")
-    player_right_decks = [elem.get_attribute('innerHTML') for elem in elements]
+    player_right_decks = [elem.get_attribute('innerHTML') for elem in elements4[9:]]
 
     # finding out who won in each game.
-    elements = driver.find_elements_by_xpath("//div[@class='replay-feed-player player-left']")
     left_players_win_lose = []
-    for elem in elements:
+    for elem in elements5[9:]:
         elem = elem.find_elements_by_xpath(".//img[@class='winner-icon']")
         if len(elem) > 0:
             left_players_win_lose.append(1)
         else:
             left_players_win_lose.append(0)
+    driver.close()
 
     """
     Organizing the data for the subsequent parsing functions.
@@ -66,7 +66,7 @@ def feed_parser():
     # constructing the feed_summary which will be the returned expression.
     feed_summary = []
 
-    for i in range(20):
+    for i in range(10):
 
         # if a match where the players use the same deck class occurs, we skip it because we can't analyze it.
         if player_left_decks[i].split()[-1] == player_right_decks[i].split()[-1]:
@@ -74,13 +74,13 @@ def feed_parser():
 
         # Appending each game summary to the list feed_summary
         if left_players_win_lose[i] == 1:
-            feed_summary.append((game_links[i], (player_left_decks[i], player_left_ranks[i]), (player_right_decks[i],
-                                                                                               player_right_ranks[i])))
+            feed_summary.append(
+                (game_links[i], (player_left_decks[i], player_left_ranks[i]), (player_right_decks[i],
+                                                                               player_right_ranks[i])))
         else:
             feed_summary.append((game_links[i], (player_right_decks[i], player_right_ranks[i]),
                                  (player_left_decks[i], player_left_ranks[i])))
 
-    driver.close()
     return feed_summary
 
 
