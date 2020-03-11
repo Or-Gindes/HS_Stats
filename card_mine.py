@@ -13,7 +13,7 @@ DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
 def format_card(data):
     """Format the raw input scrapped from card web-page and return it as dictionary"""
     data = [item.text for item in data][0].split('\n')
-    if len(data) <= 6:
+    if len(data) <= 6:  # indication of missing data
         print("Failed to get card data, attempting again")
         return False
     data = {data[i]: data[i + 1] for i in range(0, len(data), 2)}

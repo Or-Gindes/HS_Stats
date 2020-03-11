@@ -47,16 +47,21 @@ def get_decks(driver, winner_deck, loser_deck):
         # define an empty deck to be filled and later format against winner/loser input
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
+
         for link in links:
             card_name, card_dict, card_cost, count = get_card(link)
+            if card_name not in deck['Cards']:
+                # This data isn't currently collected but will be used to build a card database at a later checkpoint
+                print(card_name, card_dict, count)
+
+            # input collected data into the empty deck
             card_dict['Mana Cost'] = card_cost
             if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
                 deck['Class'] = card_dict['Class']
             deck['Deck Cost'] += (card_dict['Cost'] * count)
             deck['Total Mana Cost'] += (card_cost * count)
             deck['Cards'][card_name] += count
-            # This data isn't currently collected but will be used to build a card database at a later checkpoint
-            print(card_name, card_dict, count)
+
         # Check if class of collected deck matches winner or loser deck and format the match
         if deck['Class'] in winner_deck[0]:
             winning_deck = format_deck(winner_deck, deck)
