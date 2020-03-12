@@ -4,6 +4,7 @@
 
 ### Contents 
 * Requirements
+* Use instructions
 * Intro
 * What is the project about ?
 * What questions do we want answers for ?
@@ -12,6 +13,12 @@
 * Insights and conclusions
 * Additional Sources of information
 
+### Use Instructions
+In order to use the HS_Stats webscraper follow these instructions:
+   * Verify your system meets the requirements section below
+   * Open HS_Stats.py and set the INFINITE or N_ITERATIONS constants to determine the amount of data to be gathered:
+        * Warning: Setting INFINITE = True will cause the scrapper to gather data until Ctrl+C is entered to interrupt 
+   * Run HS_Stats.py with the chosen constants and behold as the gathered is data printed to screen
 
 ### Requirements
 The project requires the following:
@@ -20,7 +27,6 @@ The project requires the following:
   * After installing Google Chrome, install chromedriver: 
     * Firstly, check your Google Chrome version here: https://www.whatismybrowser.com/detect/what-version-of-chrome-do-i-have 
     * Then, download the appropriate chromedriver.exe according to your version here: https://chromedriver.chromium.org/
-
 
 ### Intro 
 
@@ -75,7 +81,15 @@ and the data gathered is used to make business and balance decisions on a daily 
 
 ### Insights and conclusions 
 
-* TBC
+* Don't be greedy - When extracting data from a dynamic environment make sure to extract all necessary data 
+and save it in local variables before manipulating it. Data manipulation can take time and some compatible data
+could be lost by the time you get around to extracting it.
+* When extracting complementary data from multiple web pages it can be a challenge to find points of correlation
+to connect the information - this can sometimes be achieved using auxiliary data (in our example we used 
+data from a third web-page to correlate data from the first page to the correct set in the second page - i.e.
+knowledge of game rules and card "Class" to determine deck "Class" and correlate the winning deck)
+* When web-scrapping your data extracting functions should take into account and adjust for different internet
+speed and connection conditions (for example when extracting an element that takes time to load)
 
 ### Additional Sources of information 
  
