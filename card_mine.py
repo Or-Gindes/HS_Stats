@@ -26,15 +26,17 @@ def format_card(data):
     return data
 
 
-def card_mine(url):
+def card_mine(url, quiet=False):
     """
+    :param quiet: when set to True suppress chrome window popup
     :param url: input url to specific card in hs.replay database
     :return: mine card data and organise into dictionary
     """
-    driver = get_driver(url, URL_PATTERN)
+    driver = get_driver(url, URL_PATTERN, quiet)
     if driver is False:
-        # right now function is set to return False and not exit() so as to not disrupt main scraping function
-        return False
+        # right now function is set to return {} and not exit() so as to not disrupt main scraping function
+        print("Failed to get data on card")
+        return {}
     card_info = False
     while card_info is False:
         sleep(5)
