@@ -23,7 +23,7 @@ def main():
             try:
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]
-                winner_deck, loser_deck = game_parser(match_url, winner, loser)  # , QUIET)
+                winner_deck, loser_deck = game_parser(match_url, winner, loser, QUIET)
                 print("The Winning Deck of the match is:")
                 print(winner_deck)
                 print("The Losing Deck of the match is:")
