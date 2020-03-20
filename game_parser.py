@@ -9,6 +9,7 @@ from selenium.common.exceptions import NoSuchElementException
 from time import sleep
 
 URL_PATTERN = r'https://hsreplay.net/replay'
+NUMBER_OF_CARDS_IN_DECK = 30
 
 
 def get_card(link, quiet):
@@ -34,7 +35,9 @@ def format_deck(win_or_lose_deck, collected_deck):
     name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
     return {'Deck': name, 'Class': class_name, 'Player Rank': win_or_lose_deck[1],
             'Deck Cost': collected_deck['Deck Cost'],
-            'Average Card Cost': round(collected_deck['Total Mana Cost'] / 30, 2),
+            'Average Card Cost': round(collected_deck['Total Mana Cost'] / NUMBER_OF_CARDS_IN_DECK, 2),
+            'Most_Common_Set': collected_deck['Most_Common_Set'],
+            'Most_Common_Type': collected_deck['Most_Common_Type'],
             'Cards': collected_deck['Cards']}
 
 
@@ -47,14 +50,15 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
         # define an empty deck to be filled and later format against winner/loser input
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
-
+        sets, types = [], []
         for link in links:
             card_name, card_dict, card_cost, count = get_card(link, quiet)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
                 # This data isn't currently collected but will be used to build a card database at a later checkpoint
                 print(card_name, card_dict, count)
-
+            sets.append(card_dict['Set'])
+            types.append(card_dict['Type'])
             # input collected data into the empty deck
             if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
                 deck['Class'] = card_dict['Class']
@@ -63,6 +67,8 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
             deck['Cards'][card_name] += count
 
         # Check if class of collected deck matches winner or loser deck and format the match
+        deck.update(
+            {'Most_Common_Set': max(set(sets), key=sets.count), 'Most_Common_Type': max(set(types), key=types.count)})
         if deck['Class'] in winner_deck[0]:
             winning_deck = format_deck(winner_deck, deck)
         else:

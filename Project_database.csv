@@ -1,0 +1,63 @@
+Table names,Data Type,
+,,
+Cards,,
+Card Name,varchar,Primary Key
+Class,varchar,
+Type,varchar,
+Rarity,varchar,
+Set,varchar,
+Release Year,year,
+Cost,int,
+Artist,varchar,
+Mana Cost,int,
+,,
+Decks,,
+Deck ID,int,Primary Key
+Deck Name,varchar,
+Winner,bool,
+Deck Prefix,varchar,
+Class,varchar,
+Deck Cost,int,
+Average Card Cost,int,
+Most Common Set,varchar,
+Most Common Type,varchar,
+Number of unique cards,int,15-30
+Card 1,varchar,Reference Cards – Card Name
+Card 2,varchar,Reference Cards – Card Name
+Card 3,varchar,Reference Cards – Card Name
+Card 4,varchar,Reference Cards – Card Name
+Card 5,varchar,Reference Cards – Card Name
+Card 6,varchar,Reference Cards – Card Name
+Card 7,varchar,Reference Cards – Card Name
+Card 8,varchar,Reference Cards – Card Name
+Card 9,varchar,Reference Cards – Card Name
+Card 10,varchar,Reference Cards – Card Name
+Card 11,varchar,Reference Cards – Card Name
+Card 12,varchar,Reference Cards – Card Name
+Card 13,varchar,Reference Cards – Card Name
+Card 14,varchar,Reference Cards – Card Name
+Card 15,varchar,Reference Cards – Card Name
+Card 16,varchar,Reference Cards – Card Name
+Card 17,varchar,Reference Cards – Card Name
+Card 18,varchar,Reference Cards – Card Name
+Card 19,varchar,Reference Cards – Card Name
+Card 20,varchar,Reference Cards – Card Name
+Card 21,varchar,Reference Cards – Card Name
+Card 22,varchar,Reference Cards – Card Name
+Card 23,varchar,Reference Cards – Card Name
+Card 24,varchar,Reference Cards – Card Name
+Card 25,varchar,Reference Cards – Card Name
+Card 26,varchar,Reference Cards – Card Name
+Card 27,varchar,Reference Cards – Card Name
+Card 28,varchar,Reference Cards – Card Name
+Card 29,varchar,Reference Cards – Card Name
+Card 30,varchar,Reference Cards – Card Name
+,,
+,,
+Matches,,
+Match ID,int,Primary Key
+Match URL,varchar,
+Winner Deck Name,varchar,Reference Decks – Deck ID
+Loser Deck Name,varchar,Reference Decks – Deck ID
+Winning Player Rank,int,
+Losing Player Rank,int,
