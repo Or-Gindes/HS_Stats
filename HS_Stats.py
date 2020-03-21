@@ -6,11 +6,12 @@ By: Or Gindes, Dor Sklar
 from feed_parser import feed_parser
 from game_parser import game_parser
 from selenium.common.exceptions import WebDriverException
-import argparse_cli
 
-INFINITE = argparse_cli.check_args()[0]  # Set to True for indefinite value collection
-N_ITERATIONS = argparse_cli.check_args()[1]  # Only relevant when INFINITE is set to False - determine number of scraping iterations
-QUIET = argparse_cli.check_args()[2]  # if not provided - defaults to False. When set to True - suppress driver window popup
+from argparse_cli import parse_args
+
+INFINITE = parse_args()[0]  # Set to True for indefinite value collection
+N_ITERATIONS = parse_args()[1]  # Only relevant when INFINITE is set to False - determine number of scraping iterations
+QUIET = parse_args()[2]  # if not provided - defaults to False. When set to True - suppress driver window popup
 
 
 def main():
