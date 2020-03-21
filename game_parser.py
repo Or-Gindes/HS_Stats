@@ -32,7 +32,10 @@ def get_card(link, quiet):
 
 def format_deck(win_or_lose_deck, collected_deck):
     """Format a given deck into a dictionary"""
-    name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
+    if 'Demon' in win_or_lose_deck[0]:  # Only one class has two words in the name
+        name, class_name = win_or_lose_deck[0].rsplit(' ', 2)[0], 'Demon Hunter'
+    else:
+        name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
     return {'Deck': name, 'Class': class_name, 'Player Rank': win_or_lose_deck[1],
             'Deck Cost': collected_deck['Deck Cost'],
             'Average Card Cost': round(collected_deck['Total Mana Cost'] / NUMBER_OF_CARDS_IN_DECK, 2),
