@@ -31,9 +31,6 @@ if __name__ == '__main__':
 
 
 # Click : unsuccessful
-
-
-
 # import click  # 7.1.1 version
 # @click.command()
 # @click.option('--infinity', '-i', is_flag=True,
