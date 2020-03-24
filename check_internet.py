@@ -1,10 +1,14 @@
-"""This subfunction tests for internet connection using driver from main function
- and returns True for connection establised or False after multiple failed attempts"""
+"""
+ITC Data-Mining Project
+By: Or Gindes, Dor Sklar
+
+This subfunction tests for internet connection using driver from main function
+ nd returns True for connection established or False after multiple failed attempts
+ """
 
 from time import sleep
-
-WAIT = 5  # How long to wait between connection attempts
-N_ATTEMPTS = 10  # How many connection attempts will the function make
+from selenium.common.exceptions import NoSuchElementException
+from settings import WAIT, N_ATTEMPTS, NO_INTERNET_PATTERN
 
 
 def test_connection(driver):
@@ -15,9 +19,9 @@ def test_connection(driver):
         try:
             attempt += 1
             # Try to find elements of the Chrome "Page not found" page - if successful that means no internet found
-            driver.find_element_by_xpath('//span[@jsselect="heading" and @jsvalues=".innerHTML:msg"]')
+            driver.find_element_by_xpath(NO_INTERNET_PATTERN)
             sleep(WAIT)  # if no internet - wait WAIT seconds and attempt again
             if attempt > N_ATTEMPTS:
                 return False
-        except:
+        except NoSuchElementException:
             return True
