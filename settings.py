@@ -22,6 +22,7 @@ CHROME_PATH_WIN_7 = r'C:\Program Files (x86)\Google\Application\chrome.exe'
 CHROME_PATH_LINUX = r'/usr/bin/google-chrome'
 
 """URL Constants"""
+FEED_URL_PATTERN = r'https://hsreplay.net/'
 MATCH_URL_PATTERN = r'https://hsreplay.net/replay'
 CARD_URL_PATTERN = r'https://hsreplay.net/cards'
 
@@ -31,3 +32,4 @@ CARDS_IN_DECK = 30
 """Hsreplay website related constants"""
 CARD_DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
 MIN_VALID_DATA_LENGTH = 6
+PARSING_INDEX = 9
