@@ -1,6 +1,6 @@
 """
 ITC Data-Mining Project
-By: Or Gindes, Dor Sklar
+By: Or Gindes, Dor Sklar, Mariia Padalko
 
 Hs_Stats.py is the main scrapping script which can be run for a number of iterations
 or indefinitely (until keyboard interrupt). Each iteration will scrape about 10 HearthStone matches

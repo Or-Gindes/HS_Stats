@@ -1,6 +1,8 @@
 """
 ITC Data-Mining Project
 By: Or Gindes, Dor Sklar
+
+This function parses the data of a single card from the cards Hsreplay page
 """
 
 from get_driver import get_driver

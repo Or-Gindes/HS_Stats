@@ -3,7 +3,7 @@ ITC Data-Mining Project
 By: Or Gindes, Dor Sklar
 
 This subfunction tests for internet connection using driver from main function
- nd returns True for connection established or False after multiple failed attempts
+and returns True for connection established or False after multiple failed attempts
  """
 
 from time import sleep

@@ -1,5 +1,10 @@
-# # # feed_parser
+"""
+ITC Data-Mining Project
+By: Or Gindes, Dor Sklar, Mariia Padalko
 
+This function parses the live feed of Hsreplay website for HearthStone matches
+and returns links to match as well as match data found only in the feed
+"""
 
 from get_driver import get_driver
 from settings import FEED_URL_PATTERN, PARSING_INDEX

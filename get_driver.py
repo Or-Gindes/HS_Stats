@@ -1,6 +1,9 @@
 """
 ITC Data-Mining Project
-By: Or Gindes, Dor Sklar
+By: Or Gindes, Dor Sklar, Mariia Padalko
+
+This function handles all driver selenium driver related setup
+given a matching url (to expected url pattern) the function returns a functional driver
 """
 
 from selenium import webdriver, common

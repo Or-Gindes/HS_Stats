@@ -1,6 +1,6 @@
 """
 ITC Data-Mining Project
-By: Or Gindes, Dor Sklar
+By: Or Gindes, Dor Sklar, Mariia Padalko
 
 This function receives a single match url and parses the game, returning the decks from it
 """
