@@ -7,7 +7,7 @@ This function parses the data of a single card from the cards Hsreplay page
 
 from get_driver import get_driver
 from time import sleep
-from settings import CARD_URL_PATTERN, CARD_DATA_PATTERN, MIN_VALID_DATA_LENGTH, WAIT
+from config import CARD_URL_PATTERN, CARD_DATA_PATTERN, MIN_VALID_DATA_LENGTH, WAIT
 
 
 def format_card(data):

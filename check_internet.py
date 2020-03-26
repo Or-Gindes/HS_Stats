@@ -8,7 +8,7 @@ and returns True for connection established or False after multiple failed attem
 
 from time import sleep
 from selenium.common.exceptions import NoSuchElementException
-from settings import WAIT, N_ATTEMPTS, NO_INTERNET_PATTERN
+from config import WAIT, N_ATTEMPTS, NO_INTERNET_PATTERN
 
 
 def test_connection(driver):

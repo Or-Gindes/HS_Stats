@@ -5,11 +5,6 @@ By: Or Gindes, Dor Sklar
 This is a general settings file to define constants
 """
 
-"""HS_Stats.py Constants - To be replaced by CLI argument parsing for checkpoint #2"""
-INFINITE = False  # Set to True for indefinite value collection
-N_ITERATIONS = 1  # Only relevant when INFINITE is set to False - determine number of scraping iterations
-QUIET = False  # if not provided - defaults to False. When set to True - suppress driver window popup
-
 """Internet related Constants"""
 WAIT = 5  # How long to wait between connection attempts
 N_ATTEMPTS = 10  # How many connection attempts will the function make
@@ -33,3 +28,6 @@ CARDS_IN_DECK = 30
 CARD_DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
 MIN_VALID_DATA_LENGTH = 6
 PARSING_INDEX = 9
+
+"""CLI constants"""
+MIN_NUM_OF_ARG = 2

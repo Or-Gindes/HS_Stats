@@ -11,7 +11,7 @@ from check_internet import test_connection
 import os
 import re
 from platform import system
-from settings import DRIVER_WINDOWS, DRIVER_LINUX, WINDOW_SIZE, CHROME_PATH_WIN_10, CHROME_PATH_WIN_7, CHROME_PATH_LINUX
+from config import DRIVER_WINDOWS, DRIVER_LINUX, WINDOW_SIZE, CHROME_PATH_WIN_10, CHROME_PATH_WIN_7, CHROME_PATH_LINUX
 
 
 def get_driver(url, url_pattern, quiet=False):

@@ -7,8 +7,7 @@ This function accept argument from user regarding operational parameters
 
 import sys
 import argparse
-
-MIN_NUM_OF_ARG = 2
+from config import MIN_NUM_OF_ARG
 
 
 def parse_args_cli():
@@ -34,7 +33,6 @@ def parse_args_cli():
         parser.error("Invalid input provided.\
         \nPlease choose exactly one operation mode: \
         Infinity mode (-i) for indefinite data collection or specify desired number of iterations (-n <NUMBER>)")
-    print(args.infinity, args.number_of_iterations, args.quiet)
     return [args.infinity, args.number_of_iterations, args.quiet]
 
 

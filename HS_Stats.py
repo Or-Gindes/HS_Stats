@@ -10,7 +10,6 @@ from feed_parser import feed_parser, feed_matches
 from game_parser import game_parser
 from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from urllib3.exceptions import MaxRetryError
-from selenium.common.exceptions import WebDriverException
 from argparse_cli import parse_args_cli
 
 

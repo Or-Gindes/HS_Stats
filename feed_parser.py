@@ -7,7 +7,7 @@ and returns links to match as well as match data found only in the feed
 """
 
 from get_driver import get_driver
-from settings import FEED_URL_PATTERN, PARSING_INDEX
+from config import FEED_URL_PATTERN, PARSING_INDEX
 
 
 def feed_parser():

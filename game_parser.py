@@ -9,7 +9,7 @@ from get_driver import get_driver
 from _collections import defaultdict
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
-from settings import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT
+from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT
 
 
 def get_card(link, quiet):
