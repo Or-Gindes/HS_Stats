@@ -6,13 +6,13 @@ By: Or Gindes, Dor Sklar, Marria Padalko
 from feed_parser import feed_parser
 from game_parser import game_parser
 from selenium.common.exceptions import WebDriverException
-from argparse_cli import check_args
+from argparse_cli import parse_args_cli
 
 
 def main():
     """This function can be set to gather HearthStone data indefinitely (until key prompt)
      or for a set number of iterations"""
-    arguments = check_args()
+    arguments = parse_args_cli()
     # infinite - Set to True for indefinite value collection
     infinite = arguments[0]
     # number_of_iterations - Only relevant when INFINITE is set to False - determine number of scraping iterations
