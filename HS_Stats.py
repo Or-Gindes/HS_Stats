@@ -31,7 +31,7 @@ def main():
     while (i < number_of_iterations) or infinite:
         i += 1
         try:
-            matches = feed_parser()
+            matches = feed_parser(quiet)
             for match in matches:
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]

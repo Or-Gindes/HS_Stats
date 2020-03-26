@@ -41,15 +41,15 @@ def get_driver(url, url_pattern, quiet=False):
 def open_driver(quiet):
     """sub-function which handles all driver related setup"""
     driver_path, chrome_path = chrome_os()
+    chrome_options = webdriver.chrome.options.Options()
+    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
     try:
         if quiet:  # if quiet variable is True - set chrome potions to operate without window popup
-            chrome_options = webdriver.chrome.options.Options()
             chrome_options.add_argument("--headless")
             chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
             chrome_options.binary_location = chrome_path
-            driver = webdriver.Chrome(executable_path=driver_path, chrome_options=chrome_options)
-        else:  # if quiet is False (which is default) the window will popup
-            driver = webdriver.Chrome(executable_path=driver_path)
+            # if quiet is False (which is default) the window will popup
+        driver = webdriver.Chrome(executable_path=driver_path, chrome_options=chrome_options)
     except (FileNotFoundError, common.exceptions.WebDriverException) as DriverError:
         print("Error in open_driver function!\n" + DriverError.args[0])
         driver = False
