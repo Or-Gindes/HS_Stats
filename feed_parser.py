@@ -52,7 +52,7 @@ def feed_matches(game_links, player_ranks, player_left_decks, player_right_decks
     return feed_summary
 
 
-def feed_parser():
+def feed_parser(quiet=False):
 
     """
     This function parses the live feed of 'http://hsreplay.net', and extracts the following data:
@@ -65,7 +65,7 @@ def feed_parser():
     """
 
     # Opening the browser
-    driver = get_driver('https://hsreplay.net/', FEED_URL_PATTERN)
+    driver = get_driver('https://hsreplay.net/', FEED_URL_PATTERN, quiet)
 
     # Finding all of the needed elements in the page.
     link_elements = driver.find_elements_by_xpath("//a[@class='replay-feed-item']")

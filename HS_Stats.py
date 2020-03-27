@@ -31,7 +31,7 @@ def main():
     while (i < number_of_iterations) or infinite:
         i += 1
         try:
-            matches = feed_parser()
+            matches = feed_parser(quiet)
             # TODO: input 'matches' into matches table in the database - MARIIA
             for match in matches:
                 print(match)
