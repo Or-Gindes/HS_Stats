@@ -4,7 +4,7 @@ By: Or Gindes, Dor Sklar, Mariia Padalko
 
 Hs_Stats.py is the main scrapping script which can be run for a number of iterations or indefinitely
 (until keyboard interrupt).
-Each iteration will scrape up to 11 HearthStone matches
+Each iteration will scrape up to 10 HearthStone matches
 """
 
 from feed_parser import feed_parser
@@ -32,21 +32,24 @@ def main():
         i += 1
         try:
             matches = feed_parser()
+            # TODO: input 'matches' into matches table in the database - MARIIA
             for match in matches:
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]
-                winner_deck, loser_deck = game_parser(match_url, winner, loser, quiet)
+                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
+                # TODO: input 'mined_cards' into cards table in the database - DOR
+                # TODO: input 'winner_deck' and 'loser_deck' into the decks table in the database - OR
                 print("The Winning Deck of the match is:")
                 print(winner_deck)
                 print("The Losing Deck of the match is:")
                 print(loser_deck)
-        except (WebDriverException, NoSuchWindowException) as err:
+        except (WebDriverException, NoSuchWindowException, TypeError) as err:
             print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
                   "for this error is you might have closed the driver window\nIf that is the case please consider "
                   "running the program in quite mode (-q) to suppress driver window pop-up\n")
             print("More information on error: " + err.args[0])
         except (KeyboardInterrupt, MaxRetryError):
-            print("Thank you for using Hs Stats - Hearthstone matches webscrapper")
+            print("Thank you for using Hs Stats - HearthStone matches webscrapper")
         finally:
             exit()
 

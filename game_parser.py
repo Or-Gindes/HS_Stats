@@ -55,14 +55,14 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
         # define an empty deck to be filled and later format against winner/loser input
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
-
-        for link in links:
+        mined_cards = {}    # mined cards which were not seen before will be collected here
+        for link in links:  # TODO: check if card in this link is already in database - if so return values for it
             card_name, card_dict, card_cost, count = get_card(link, quiet)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
                 # This data isn't currently collected but will be used to build a card database at a later checkpoint
                 print(card_name, card_dict, count)
-
+                mined_cards[card_name] = card_dict  # collect cards which were not already found in the database
             # input collected data into the empty deck
             if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
                 deck['Class'] = card_dict['Class']
@@ -77,7 +77,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
             winning_deck = format_deck(winner_deck, deck)
         elif deck['Class'] in loser_deck[0]:
             losing_deck = format_deck(loser_deck, deck)
-    return winning_deck, losing_deck
+    return winning_deck, losing_deck, mined_cards
 
 
 def game_parser(url, winner_deck, loser_deck, quiet=False):
@@ -88,14 +88,16 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     :param url: input url to specific game replay in hs.replay database
     :return: mine deck data using the card_mine function and log deck win/loss state
     """
+    if quiet:
+        print("Please wait while the game is being loaded...")
     driver = get_driver(url, MATCH_URL_PATTERN, quiet)
     if driver is False:
         # right now function is set to return False and not exit() so as to not disrupt main scraping function
         return False
     sleep(WAIT)  # Sleep is not required but useful when internet is unstable
-    winner_deck, loser_deck = get_decks(driver, winner_deck, loser_deck, quiet)
+    winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
     driver.quit()
-    return winner_deck, loser_deck
+    return winner_deck, loser_deck, mined_cards
 
 
 def main():
