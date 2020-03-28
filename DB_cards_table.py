@@ -5,7 +5,7 @@ By: Or Gindes, Dor Sklar & Mariia Padalko
 
 import sqlite3
 
-DB_FILENAME = 'Hs_Stats.db'
+DB_FILENAME = 'HS_Stats.db'
 SET_RELEASE_DIC = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'Descent of Dragons': 2019,
                    'Saviors of Uldum': 2019, 'Rise of Shadows': 2019, 'The Witchwood': 2018, 'The Boomsday Project': 2018,
                    "Rastakhan's Rumble": 2018}
