@@ -35,10 +35,15 @@ def format_deck(win_or_lose_deck, collected_deck):
      :param collected_deck: the deck built in get_decks function
      :param win_or_lose_deck: the name of the deck passed from feed_parser
     """
-    name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
+    if 'Demon' in win_or_lose_deck[0]:  # Only one class has two words in the name
+        name, class_name = win_or_lose_deck[0].rsplit(' ', 2)[0], 'Demon Hunter'
+    else:
+        name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
     return {'Deck': name, 'Class': class_name, 'Player Rank': win_or_lose_deck[1],
             'Deck Cost': collected_deck['Deck Cost'],
             'Average Card Cost': round(collected_deck['Total Mana Cost'] / CARDS_IN_DECK, 2),
+            'Most_Common_Set': collected_deck['Most_Common_Set'],
+            'Most_Common_Type': collected_deck['Most_Common_Type'],
             'Cards': collected_deck['Cards']}
 
 
@@ -56,6 +61,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
         mined_cards = {}    # mined cards which were not seen before will be collected here
+        sets, types = [], []
         for link in links:  # TODO: check if card in this link is already in database - if so return values for it
             card_name, card_dict, card_cost, count = get_card(link, quiet)
             if card_name not in deck['Cards']:
@@ -63,13 +69,16 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
                 # This data isn't currently collected but will be used to build a card database at a later checkpoint
                 print(card_name, card_dict, count)
                 mined_cards[card_name] = card_dict  # collect cards which were not already found in the database
+            sets.append(card_dict['Set'])
+            types.append(card_dict['Type'])
             # input collected data into the empty deck
             if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
                 deck['Class'] = card_dict['Class']
             deck['Deck Cost'] += (card_dict['Cost'] * count)
             deck['Total Mana Cost'] += (card_cost * count)
             deck['Cards'][card_name] += count
-
+        deck.update(
+            {'Most_Common_Set': max(set(sets), key=sets.count), 'Most_Common_Type': max(set(types), key=types.count)})
         # Check if class of collected deck matches winner or loser deck and format the match
         # There are two decks in each match - therefor this section will occur twice
         # one will match the class of the winning deck and one will match the class of losing one
