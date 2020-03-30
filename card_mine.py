@@ -22,6 +22,8 @@ def format_card(data):
         print("Failed to get card data, attempting again")
         return False
     data = {data[i]: data[i + 1] for i in range(0, len(data), 2)}
+    if data['Set'] == 'GLOBAL_CARD_SET_BLACK_TEMPLE':
+        data['Set'] = 'Ashes of Outland'
     try:
         data['Cost'] = int(data['Cost'].split()[0])
     except ValueError:
@@ -40,7 +42,7 @@ def card_mine(url, quiet=False):
     card_name = url.rsplit('/', 1)[1].title()
     with sqlite3.connect(DB_FILENAME) as con:
         # cur = con.cursor()
-        df = pd.read_sql(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, con)
+        df = pd.read_sql_query(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, con)
         # cur.close()
     if df.shape[0] == 1:  # This means the card was found in the database scraping can be skipped
         print("Card %s was pulled from database" % card_name)

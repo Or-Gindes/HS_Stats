@@ -81,7 +81,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
             # input collected data into the empty deck
             if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
                 deck['Class'] = card_dict['Class']
-            deck['Deck Cost'] += (card_dict['Cost'] * count)
+            deck['Deck Cost'] += (int(card_dict['Cost']) * count)
             deck['Total Mana Cost'] += (card_cost * count)
             deck['Cards'][card_name] += count
         deck.update(

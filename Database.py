@@ -9,6 +9,7 @@ import sqlite3
 import os
 import pandas as pd
 from game_parser import game_parser
+from feed_parser import feed_parser
 
 # TODO: Move these constants to the config file
 DB_FILENAME = 'HS_Stats.db'
@@ -18,13 +19,38 @@ SET_RELEASE_DIC = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'De
                    "Galakrond's Awakening": 2020, 'The Boomsday Project': 2018, "Rastakhan's Rumble": 2018}
 
 
+def remove_rank_from_rank(rank_str):
+    if 'Rank' in rank_str.split():
+        return rank_str.split()[1]
+    else:
+        return rank_str
+
+
+def insert_matches(match_url, winner, loser):
+    """
+    This function writes results of matches into matches table
+    """
+    with sqlite3.connect(DB_FILENAME) as con:
+        cur = con.cursor()
+        cur.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
+        deck_id = cur.fetchall()[0][0]
+        winner_rank = remove_rank_from_rank(winner[1])
+        looser_rank = remove_rank_from_rank(loser[1])
+        insert_command = '''INSERT INTO matches (
+        Match_URL, Winner_Deck_ID, Looser_Deck_ID, Winner_Player_Rank, Looser_Player_Rank) VALUES (?, ?, ?, ?, ?)'''
+        insert_values = [match_url, deck_id, deck_id - 1, winner_rank, looser_rank]
+        cur.execute(insert_command, insert_values)
+        con.commit()
+        cur.close()
+
+
 def insert_card(name, card_dict):
     """This function gets the card's name and details and inserts it into the cards database,
     unless it's there already"""
     with sqlite3.connect(DB_FILENAME) as con:
         cur = con.cursor()
         df = pd.read_sql(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, con)
-        if df.shape[0] == 0:    # This means the card was not found in the database and should be inserted
+        if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
             insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, 'Set', Release_year, Cost, 
                                 Artist, Mana_Cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
             card_dict['Release Year'] = SET_RELEASE_DIC[card_dict['Set']]
@@ -86,6 +112,13 @@ def create_tables():
         Most_Common_Set VARCHAR,
         Most_Common_Type VARCHAR,
         Number_of_Unique_Cards INT)'''
+    create_table_matches = '''CREATE TABLE Matches (
+        Match_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+        Match_URL VARCHAR,
+        Winner_Deck_ID REFERENCES Decks(Deck_ID),
+        Looser_Deck_ID REFERENCES Decks(Deck_ID),
+        Winner_Player_Rank VARCHAR,
+        Looser_Player_Rank VARCHAR)'''
     create_table_cards = '''CREATE TABLE Cards (
         Card_ID INTEGER PRIMARY KEY AUTOINCREMENT,
         Card_name VARCHAR,
@@ -99,10 +132,10 @@ def create_tables():
         Mana_Cost INT)'''
     create_table_card_in_deck = '''CREATE TABLE Card_In_Deck (
         ID INTEGER PRIMARY KEY AUTOINCREMENT,
-        Deck_ID INTEGER REFERENCES Decks (Deck_ID),
-        Card_ID INTEGER REFERENCES Cards (Card_ID),
+        Deck_ID REFERENCES Decks(Deck_ID),
+        Card_ID REFERENCES Cards(Card_ID),
         Number_of_Copies INTEGER)'''
-    table_commands = [create_table_decks, create_table_cards, create_table_card_in_deck]
+    table_commands = [create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck]
     with sqlite3.connect(DB_FILENAME) as con:
         for command in table_commands:
             cur = con.cursor()
@@ -117,20 +150,53 @@ def main():
     # if os.path.exists(DB):
     #     os.remove(DB)
     # create_tables()
-    # game_url = 'https://hsreplay.net/replay/rh4z669MM9bhAnpuE6Ad53'
-    # game_url = 'https://hsreplay.net/replay/tHc63LLjsgnHAao2yki6DX'
-    game_url = 'https://hsreplay.net/replay/qUZw3utrzMVgLLcVEy3z9e'
-    # winner_deck, loser_deck, mined_cards = game_parser(game_url, ('Aggro Overload Shaman', 'Rank 1'),
-    #                                                    ('Bomb Warrior', 'Legend 1000'), False)
-    # winner_deck, loser_deck, mined_cards = game_parser(game_url, ('Aggro Overload Shaman', 'Rank 1'),
-    #                                                    ('Quest Hunter', 'Legend 1000'), False)
-    winner_deck, loser_deck, mined_cards = game_parser(game_url, ('Aggro Overload Shaman', 'Rank 1'),
-                                                       ('Quest Druid', 'Legend 1000'), False)
-    insert_decks(winner_deck, loser_deck)
-    for card_name, card_info in mined_cards.items():
-        insert_card(card_name, card_info)
-    card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
+    feed_results = feed_parser()
+    for iterations, match in enumerate(feed_results):
+        match_url, winner, loser = match[0], match[1], match[2]
+        winner_rank = remove_rank_from_rank(winner[1])
+        looser_rank = remove_rank_from_rank(loser[1])
+        print('{} - winner deck {}, winner rank {}, looser deck {}, looser rank {}'.format(match_url, winner[0],
+                                                                                           winner_rank, loser[0],
+                                                                                           looser_rank))
+        winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, False)
+        insert_decks(winner_deck, loser_deck)
+        insert_matches(match_url, winner, loser)
+        for card_name, card_info in mined_cards.items():
+            insert_card(card_name, card_info)
+        card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
 
 
 if __name__ == '__main__':
     main()
+
+# def create_matches_table():
+#     """
+#         This function creates the matches table within the Hs_stats database.
+#     """
+#     with sqlite3.connect(DB_FILENAME) as con:
+#         cur = con.cursor()
+#         cur.execute('''CREATE TABLE matches (
+#                             Match_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+#                             Match_URL VARCHAR,
+#                             FOREIGN KEY (Winner_Deck_ID) REFERENCES decks(Deck_ID))
+#                             FOREIGN KEY (Looser_Deck_ID) REFERENCES decks(Deck_ID))
+#                             Winner_Player_Rank VARCHAR,
+#                             Looser_Player_Rank VARCHAR)''')
+#         con.commit()
+#         cur.close()
+
+
+# What we need:
+#    Winner_Deck_ID = decks.Deck_ID WHERE decks.Deck_Name = winner_deck_name AND decks.Winner = True
+#    Looser_Deck_ID = decks.Deck_ID WHERE decks.Deck_Name = winner_deck_name AND decks.Winner = False
+#
+#
+# def main():
+#     create_matches_table()
+#     update_matches_table()
+#
+#
+# if __name__ == '__main__':
+#     main()
+#
+# checking
