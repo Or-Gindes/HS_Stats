@@ -8,6 +8,15 @@ This function parses the data of a single card from the cards Hsreplay page
 from get_driver import get_driver
 from time import sleep
 from config import CARD_URL_PATTERN, CARD_DATA_PATTERN, MIN_VALID_DATA_LENGTH, WAIT
+import pandas as pd
+from sqlalchemy import create_engine
+
+# TODO: Move these constants to the config file
+RELEVANT_DATA = 2
+URL_PATTERN = r'https://hsreplay.net/cards'
+DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
+DB_FILENAME = 'HS_Stats'
+PASSWORD = 'INPUT YOUR OWN PASSWORD'
 
 
 def format_card(data):
@@ -17,6 +26,8 @@ def format_card(data):
         print("Failed to get card data, attempting again")
         return False
     data = {data[i]: data[i + 1] for i in range(0, len(data), 2)}
+    if data['Set'] == 'GLOBAL_CARD_SET_BLACK_TEMPLE':  # this is some bad data that sometimes pops up
+        data['Set'] = 'Ashes of Outland'
     try:
         data['Cost'] = int(data['Cost'].split()[0])
     except ValueError:
@@ -33,6 +44,14 @@ def card_mine(url, quiet=False):
     :param url: input url to specific card in hs.replay database
     :return: mine card data and organise into dictionary
     """
+    # card_name = url.rsplit('/', 1)[1].title()
+    # db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
+    # engine = create_engine(db_connection_str)
+    # df = pd.read_sql_query(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, engine)
+    # if df.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
+    #     print("Card %s was pulled from database" % card_name)
+    #     card_info = {col: df[col][0] for col in df.columns[RELEVANT_DATA:]}
+    # else:  # Card was not found in the database and will be scraped
     driver = get_driver(url, CARD_URL_PATTERN, quiet)
     # "driver is False" is required because "not driver" can cause unexpected behaviour when get_driver succeeds
     if driver is False:
@@ -44,12 +63,12 @@ def card_mine(url, quiet=False):
         sleep(WAIT)
         card_info = format_card(driver.find_elements_by_xpath(CARD_DATA_PATTERN))
     driver.quit()  # close driver when finished
-    return card_info
+    return card_info  # return card info either way
 
 
 def main():
     """test main card_mine function"""
-    card_url = 'https://hsreplay.net/cards/64/swipe#tab=recommended-decks'
+    card_url = 'https://hsreplay.net/cards/47222/zap'
     print(card_mine(card_url))
 
 

@@ -12,19 +12,25 @@ from time import sleep
 from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT
 
 
-def get_card(link, quiet):
+def get_card(link, deck, mined_cards, quiet):
     """
+    :param mined_cards: cards collected so far for this deck
+    :param deck: the deck currently being filled
     :param link: web-element of each card in deck
     :return: card: dictionary of card data / count: number of times a card appears in the deck
     """
     card_url = link.get_attribute("href")  # get link to card - used to with card_mine to get card info
     card_name = card_url.rsplit('/', 1)[1].title()
-    card_dict = card_mine(card_url, quiet)
-    try:
-        count = int(link.find_element_by_class_name("card-count").get_attribute("innerHTML"))
-    except (ValueError, NoSuchElementException):
-        # ValueError: This happens for Legendary cards marked with * (means there is only one)
-        # NoSuchElementException: This means that there is only 1 of the card
+    if card_name not in deck['Cards'].keys():
+        card_dict = card_mine(card_url, quiet)
+        try:
+            count = int(link.find_element_by_class_name("card-count").get_attribute("innerHTML"))
+        except (ValueError, NoSuchElementException):
+            # ValueError: This happens for Legendary cards marked with * (means there is only one)
+            # NoSuchElementException: This means that there is only 1 of the card
+            count = 1
+    else:   # card appears twice and was already mined
+        card_dict = mined_cards[card_name]
         count = 1
     cost = int(link.find_element_by_class_name("card-cost").get_attribute("innerHTML"))
     return card_name, card_dict, cost, count
@@ -56,17 +62,20 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
     :return: use sub-function to mine cards based on links, format decks and return them with added information
     """
     match_info = driver.find_elements_by_class_name("card-list")
+    if len(match_info) < 2:  # indication of missing data
+        print("Failed to get match data, attempting again")
+        return False
+    mined_cards = {}  # mined cards which were not seen before will be collected here
     for deck_in_match in match_info:
         # define an empty deck to be filled and later format against winner/loser input
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
-        mined_cards = {}    # mined cards which were not seen before will be collected here
+        mined_cards = {}  # mined cards which were not seen before will be collected here
         sets, types = [], []
-        for link in links:  # TODO: check if card in this link is already in database - if so return values for it
-            card_name, card_dict, card_cost, count = get_card(link, quiet)
+        for link in links:
+            card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards, quiet)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
-                # This data isn't currently collected but will be used to build a card database at a later checkpoint
                 print(card_name, card_dict, count)
                 mined_cards[card_name] = card_dict  # collect cards which were not already found in the database
             sets.append(card_dict['Set'])
@@ -74,7 +83,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
             # input collected data into the empty deck
             if deck['Class'] == 'Neutral' and card_dict['Class'] != 'Neutral':
                 deck['Class'] = card_dict['Class']
-            deck['Deck Cost'] += (card_dict['Cost'] * count)
+            deck['Deck Cost'] += (int(card_dict['Cost']) * count)
             deck['Total Mana Cost'] += (card_cost * count)
             deck['Cards'][card_name] += count
         deck.update(
@@ -103,16 +112,21 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     if driver is False:
         # right now function is set to return False and not exit() so as to not disrupt main scraping function
         return False
-    sleep(WAIT)  # Sleep is not required but useful when internet is unstable
-    winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
+    mined_cards = False
+    while mined_cards is False:
+        sleep(WAIT)  # Sleep is not required but useful when internet is unstable
+        try:
+            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
+        except TypeError:
+            mined_cards = False
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 
 
 def main():
     """Function used to test game_parser function"""
-    game_url = 'https://hsreplay.net/replay/X4xfuTityKW6sYoDEGF2hD'
-    winner_deck, loser_deck = game_parser(game_url, ('Highlander Warrior', '1'), ('Dragon Hunter', 'Legend 1000'))
+    game_url = 'https://hsreplay.net/replay/sS46KjLBpoouj9RxbQGqGR'
+    winner_deck, loser_deck = game_parser(game_url, ('Mech Hunter', '1'), ('Galakrond Rogue', 'Legend 1000'))
     print("The Winning Deck of the match is:")
     print(winner_deck)
     print("The Losing Deck of the match is:")

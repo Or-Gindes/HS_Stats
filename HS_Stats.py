@@ -32,13 +32,13 @@ def main():
         i += 1
         try:
             matches = feed_parser(quiet)
-            # TODO: input 'matches' into matches table in the database - MARIIA
             for match in matches:
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]
                 winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
-                # TODO: input 'mined_cards' into cards table in the database - DOR
                 # TODO: input 'winner_deck' and 'loser_deck' into the decks table in the database - OR
+                # TODO: input 'matches' into matches table in the database - MARIIA
+                # TODO: input 'mined_cards' into cards table in the database - DOR
                 print("The Winning Deck of the match is:")
                 print(winner_deck)
                 print("The Losing Deck of the match is:")
