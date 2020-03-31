@@ -13,7 +13,7 @@ RELEVANT_DATA = 2
 URL_PATTERN = r'https://hsreplay.net/cards'
 DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
 DB_FILENAME = 'HS_Stats'
-PASSWORD = 'INPUT YOUR OWN PASSWORD'
+PASSWORD = 'shiralaro123'
 
 
 def format_card(data):
@@ -47,6 +47,7 @@ def card_mine(url, quiet=False):
     if df.shape[0] == 1:  # This means the card was found in the database scraping can be skipped
         print("Card %s was pulled from database" % card_name)
         card_info = {col: df[col][0] for col in df.columns[RELEVANT_DATA:]}
+        card_info['Set'] = card_info['Card_set']
     else:  # Card was not found in the database and will be scraped
         driver = get_driver(url, URL_PATTERN, quiet)
         if driver is False:
