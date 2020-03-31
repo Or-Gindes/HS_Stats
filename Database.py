@@ -10,10 +10,12 @@ import os
 import pandas as pd
 from game_parser import game_parser
 from feed_parser import feed_parser
+from card_mine import DB_FILENAME, PASSWORD
+
 
 # TODO: Move these constants to the config file (UPDATE: check if any of these consts. are redundant)
 # TODO: converting the DB creation to MySQL complete. Now the insertion must be converted to MySQL.
-DB_FILENAME = 'HS_Stats.db'
+
 DB = os.path.join(os.path.dirname(os.path.realpath(__file__)), DB_FILENAME)
 SET_RELEASE_DIC = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'Descent of Dragons': 2019,
                    'Saviors of Uldum': 2019, 'Rise of Shadows': 2019, 'The Witchwood': 2018, 'Hall of Fame': 2014,
@@ -74,10 +76,9 @@ def insert_decks(winner_deck, loser_deck):
         con.commit()
 
 
-def card_in_deck_update(winner_cards, loser_cards):  # , winner_deck_id, loser_deck_id):
+def card_in_deck_update(winner_cards, loser_cards):
     """Given cards from winning and losing deck in a match - insert into card_in_deck table in the database"""
     decks = [winner_cards, loser_cards]
-    # deck_id = [loser_deck_id, winner_deck_id]
     insert_command = 'INSERT INTO Card_In_Deck (Deck_ID, Card_ID, Number_of_Copies) VALUES (?, ?, ?)'
     with pymysql.connect(DB_FILENAME) as con:
         con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
@@ -94,9 +95,8 @@ def card_in_deck_update(winner_cards, loser_cards):  # , winner_deck_id, loser_d
 
 
 def create_database():
-    with pymysql.connect(host='localhost', user='root', passwd='mazaz123') as con:
-        # cur = con.cursor()
-        con.execute("CREATE DATABASE hs_stats")
+    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
+        con.execute("CREATE DATABASE %s" % DB_FILENAME)
 
 
 def create_tables():
@@ -141,7 +141,7 @@ def create_tables():
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID))'''
     table_commands = [create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck]
     # type your own password !
-    with pymysql.connect(host='localhost', user='root', passwd='password?', db='HS_Stats') as con:
+    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
         for command in table_commands:
             con.execute(command)
 
@@ -149,10 +149,14 @@ def create_tables():
 def main():
     """Function used to test the decks_table creation and handling functions"""
     # Use to reset database as needed
-    if os.path.exists(DB):
-        os.remove(DB)
-    create_database()  # will throw an error if already exists
-    create_tables()  # will throw an error if already exists
+    try:
+        with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
+            con.execute("DROP DATABASE %s" % DB_FILENAME)
+    except pymysql.err.InternalError:
+        pass
+    finally:
+        create_database()  # will throw an error if already exists
+        create_tables()  # will throw an error if already exists
     feed_results = feed_parser()
     for iterations, match in enumerate(feed_results):
         match_url, winner, loser = match[0], match[1], match[2]

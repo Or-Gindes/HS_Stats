@@ -64,6 +64,9 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
     :return: use sub-function to mine cards based on links, format decks and return them with added information
     """
     match_info = driver.find_elements_by_class_name("card-list")
+    if len(match_info) < 2:  # indication of missing data
+        print("Failed to get match data, attempting again")
+        return False
     mined_cards = {}  # mined cards which were not seen before will be collected here
     for deck_in_match in match_info:
         # define an empty deck to be filled and later format against winner/loser input
@@ -110,16 +113,21 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     if driver is False:
         # right now function is set to return False and not exit() so as to not disrupt main scraping function
         return False
-    sleep(5)  # Sleep is not required but useful when internet is unstable
-    winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
+    mined_cards = False
+    while mined_cards is False:
+        sleep(5)  # Sleep is not required but useful when internet is unstable
+        try:
+            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
+        except TypeError:
+            mined_cards = False
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 
 
 def main():
     """Function used to test game_parser function"""
-    game_url = 'https://hsreplay.net/replay/X4xfuTityKW6sYoDEGF2hD'
-    winner_deck, loser_deck = game_parser(game_url, ('Highlander Warrior', '1'), ('Dragon Hunter', 'Legend 1000'))
+    game_url = 'https://hsreplay.net/replay/sS46KjLBpoouj9RxbQGqGR'
+    winner_deck, loser_deck = game_parser(game_url, ('Mech Hunter', '1'), ('Galakrond Rogue', 'Legend 1000'))
     print("The Winning Deck of the match is:")
     print(winner_deck)
     print("The Losing Deck of the match is:")
