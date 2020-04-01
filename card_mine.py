@@ -47,7 +47,7 @@ def card_mine(url, quiet=False):
     card_name = url.rsplit('/', 1)[1].title()
     card = from_database(card_name)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
-        print("Card %s was pulled from database" % card_name)
+        print("Card data for '%s' was pulled from database" % card_name)
         card_info = {col: card[col][0] for col in card.columns[CARD_RELEVANT_DATA:]}
         card_info['Set'] = card_info['Card_set']
     else:  # Card was not found in the database and will be scraped
@@ -59,6 +59,7 @@ def card_mine(url, quiet=False):
             return {}
         card_info = False
         while card_info is False:
+            print("Card data for '%s' is now being webscrapped" % card_name)
             sleep(WAIT)
             card_info = format_card(driver.find_elements_by_xpath('//aside[@class="infobox"]/ul[2]'))
         driver.quit()  # close driver when finished

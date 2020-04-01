@@ -50,7 +50,6 @@ def insert_card(name, card_dict):
     db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
     engine = create_engine(db_connection_str)
     df = pd.read_sql_query(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, engine)
-    # df = pd.read_sql(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, con)
     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
         with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
             insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
@@ -59,6 +58,7 @@ def insert_card(name, card_dict):
             insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
                              card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost']]
             con.execute(insert_command, insert_values)
+            print("%s was put into the database" % name)
 
 
 def insert_decks(winner_deck, loser_deck):

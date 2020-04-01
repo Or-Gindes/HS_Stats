@@ -50,19 +50,19 @@ def main():
     while (i < number_of_iterations) or infinite:
         i += 1
         try:
+            print("Now scrapping matches from HsReplay live feed")
             matches = feed_parser(quiet)
             for match in matches:
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]
                 winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
-                print("Database is updated with the Winning Deck of the match:")
+                print("\nDatabase is updated with the Winning Deck of the match:")
                 print(winner_deck)
-                print("Database is updated with the Losing Deck of the match:")
+                print("\nDatabase is updated with the Losing Deck of the match:")
                 print(loser_deck)
                 insert_decks(winner_deck, loser_deck)
                 insert_matches(match_url, winner, loser)
                 for card_name, card_info in mined_cards.items():
-                    print("%s was put into the database" % card_name)
                     insert_card(card_name, card_info)
                 card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
         except (WebDriverException, NoSuchWindowException, TypeError) as err:
