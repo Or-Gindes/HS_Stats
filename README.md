@@ -17,6 +17,7 @@
     * Technologies
     * Setting up your project folder and environment
     * User manual
+    * Database
 
 ### Intro 
 
@@ -118,6 +119,7 @@ speed and connection conditions (for example when extracting an element that tak
 ### Current status
 * Changing the scripts from using SQLite to MySQL - done. 
 * Getting the MySQL user access details - Mechanism to be decided, in progress.
+* Providing useful SQL commands in the appendix - in progress.
 
 ### Technologies 
 * Python 3
@@ -138,22 +140,22 @@ speed and connection conditions (for example when extracting an element that tak
 
 3. Create a virtual environment with required modules for the project (using the terminal / command prompt)
 
-    ```
-    # go into the project directory
-    cd project-directory-path
-    
-    # you can replace 'env' with a name of your choosing.
-    python -m venv env
-    
-    # you must activate the environemnt first
-    .\env\Scripts\activate
-    
-    # installing the required modules
-    pip install -r requirements.txt
-    
-    # exit the virtual environment for now
-    deactivate
-    ```
+```
+# go into the project directory
+cd project-directory-path
+
+# you can replace 'env' with a name of your choosing.
+python -m venv env
+
+# you must activate the environemnt first
+.\env\Scripts\activate
+
+# installing the required modules
+pip install -r requirements.txt
+
+# exit the virtual environment for now
+deactivate
+```
 
 ### User manual
 1. This project utilizes a CLI, allowing you to run it in different mechanisms:
@@ -166,21 +168,23 @@ speed and connection conditions (for example when extracting an element that tak
 
 2. Now, using the terminal / command prompt:
 
-    ```
-    # go into the project directory
-    cd project-directory-path
-    
-    # activate the environemnt first
-    .\env\Scripts\activate
-    
-    # activate the web scraper for infinite number of iterations, with quiet mode (EXAMPLE 1)
-    python .\HS_Stats.py -i -q
-    
-    # activate the web scraper for 5 iterations, without quiet mode (EXAMPLE 2)
-    python .\HS_Stats.py -n5 
-    
-    # exit the virtual environment for now
-    deactivate
-    ```
+```
+# go into the project directory
+cd project-directory-path
 
-3. Using MySQL workbench (or the helpful 'sqlalchemy' module) You can checkout the newly created database.
+# activate the environemnt first
+.\env\Scripts\activate
+
+# activate the web scraper for infinite number of iterations, with quiet mode (EXAMPLE 1)
+python .\HS_Stats.py -i -q
+
+# activate the web scraper for 5 iterations, without quiet mode (EXAMPLE 2)
+python .\HS_Stats.py -n5 
+
+# exit the virtual environment for now
+deactivate
+```
+
+### Database
+1. Using MySQL workbench (or the helpful 'sqlalchemy' module) You can checkout the newly created database.
+2. Useful commands - To be continued.
