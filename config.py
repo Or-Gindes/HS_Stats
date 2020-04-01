@@ -32,7 +32,7 @@ PARSING_INDEX = 9
 MIN_NUM_OF_ARG = 2
 
 """Database"""
-PASSWORD = 'shiralaro123'
+PASSWORD = ''
 DB_FILENAME = 'HS_Stats'
 CREATE_NEW_DB = False
 CARD_RELEVANT_DATA = 2
