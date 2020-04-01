@@ -16,9 +16,25 @@ QUIET = False  # if not provided - defaults to False. When set to True - suppres
 CREATE_NEW_DB = True
 
 
+def initializedb():
+    if CREATE_NEW_DB:  # set to True to delete database if one is found and create new one
+        try:
+            with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
+                con.execute("DROP DATABASE %s" % DB_FILENAME)
+                print("database found and deleted")
+        except pymysql.err.InternalError as e:
+            print(e)
+        except pymysql.err.OperationalError:
+            print("Wrong Password")
+            exit()
+        create_database()
+        create_tables()
+
+
 def main():
     """This function can be set to gather HearthStone data indefinitely (until key prompt)
      or for a set number of iterations"""
+    initializedb()
     i = 0
     while (i < N_ITERATIONS) or INFINITE:
         i += 1
@@ -32,18 +48,6 @@ def main():
                 print(winner_deck)
                 print("The Losing Deck of the match is:")
                 print(loser_deck)
-                if CREATE_NEW_DB:   # set to True to delete database if one is found and create new one
-                    try:
-                        with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
-                            con.execute("DROP DATABASE %s" % DB_FILENAME)
-                            print("database found and deleted")
-                    except pymysql.err.InternalError as e:
-                        print(e)
-                    except pymysql.err.OperationalError:
-                        print("Wrong Password")
-                        exit()
-                    create_database()  # will throw an error if already exists
-                    create_tables()  # will throw an error if already exists
                 insert_decks(winner_deck, loser_deck)
                 insert_matches(match_url, winner, loser)
                 for card_name, card_info in mined_cards.items():
