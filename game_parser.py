@@ -75,7 +75,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
             card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards, quiet)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
-                print(card_name, card_dict, count)
+                # print(card_name, card_dict, count)    # for debugging
                 mined_cards[card_name] = card_dict  # collect cards which were not already found in the database
             sets.append(card_dict['Set'])
             types.append(card_dict['Type'])

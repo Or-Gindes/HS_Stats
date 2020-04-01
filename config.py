@@ -1,6 +1,6 @@
 """
 ITC Data-Mining Project
-By: Or Gindes, Dor Sklar
+By: Or Gindes, Dor Sklar, Mariia Padalko
 
 This is a general settings file to define constants
 """
@@ -25,9 +25,14 @@ CARD_URL_PATTERN = r'https://hsreplay.net/cards'
 CARDS_IN_DECK = 30
 
 """Hsreplay website related constants"""
-CARD_DATA_PATTERN = '//aside[@class="infobox"]/ul[2]'
-MIN_VALID_DATA_LENGTH = 6
+VALID_DATA_LENGTH = 6
 PARSING_INDEX = 9
 
 """CLI constants"""
 MIN_NUM_OF_ARG = 2
+
+"""Database"""
+PASSWORD = 'shiralaro123'
+DB_FILENAME = 'HS_Stats'
+CREATE_NEW_DB = False
+CARD_RELEVANT_DATA = 2

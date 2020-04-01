@@ -7,20 +7,22 @@ This function parses the data of a single card from the cards Hsreplay page
 
 from get_driver import get_driver
 from time import sleep
-from config import CARD_URL_PATTERN, CARD_DATA_PATTERN, MIN_VALID_DATA_LENGTH, WAIT
+from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, PASSWORD, DB_FILENAME, CARD_RELEVANT_DATA
 import pandas as pd
 from sqlalchemy import create_engine
 
-# TODO: Move these constants to the config file
-RELEVANT_DATA = 2
-DB_FILENAME = 'HS_Stats'
-PASSWORD = 'INPUT YOUR OWN PASSWORD'
+
+def from_database(card_name):
+    db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
+    engine = create_engine(db_connection_str)
+    card = pd.read_sql_query(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, engine)
+    return card
 
 
 def format_card(data):
     """Format the raw input scrapped from card web-page and return it as dictionary"""
     data = [item.text for item in data][0].split('\n')
-    if len(data) <= MIN_VALID_DATA_LENGTH:  # indication of missing data
+    if len(data) <= VALID_DATA_LENGTH:  # indication of missing data
         print("Failed to get card data, attempting again")
         return False
     data = {data[i]: data[i + 1] for i in range(0, len(data), 2)}
@@ -43,12 +45,10 @@ def card_mine(url, quiet=False):
     :return: mine card data and organise into dictionary
     """
     card_name = url.rsplit('/', 1)[1].title()
-    db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
-    engine = create_engine(db_connection_str)
-    df = pd.read_sql_query(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, engine)
-    if df.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
+    card = from_database(card_name)  # Check if card is already found in database
+    if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
         print("Card %s was pulled from database" % card_name)
-        card_info = {col: df[col][0] for col in df.columns[RELEVANT_DATA:]}
+        card_info = {col: card[col][0] for col in card.columns[CARD_RELEVANT_DATA:]}
         card_info['Set'] = card_info['Card_set']
     else:  # Card was not found in the database and will be scraped
         driver = get_driver(url, CARD_URL_PATTERN, quiet)
@@ -60,7 +60,7 @@ def card_mine(url, quiet=False):
         card_info = False
         while card_info is False:
             sleep(WAIT)
-            card_info = format_card(driver.find_elements_by_xpath(CARD_DATA_PATTERN))
+            card_info = format_card(driver.find_elements_by_xpath('//aside[@class="infobox"]/ul[2]'))
         driver.quit()  # close driver when finished
     return card_info  # return card info either way
 

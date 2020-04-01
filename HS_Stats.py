@@ -13,10 +13,8 @@ from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from urllib3.exceptions import MaxRetryError
 from argparse_cli import parse_args_cli
 from Database import insert_card, insert_decks, insert_matches, create_database, create_tables, card_in_deck_update
-from card_mine import PASSWORD, DB_FILENAME
+from config import PASSWORD, DB_FILENAME, CREATE_NEW_DB   # TODO: get this input from user, not necessarily in CLI
 import pymysql
-
-CREATE_NEW_DB = True
 
 
 def initializedb():
@@ -57,16 +55,14 @@ def main():
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]
                 winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
-                # TODO: input 'winner_deck' and 'loser_deck' into the decks table in the database - OR
-                # TODO: input 'matches' into matches table in the database - MARIIA
-                # TODO: input 'mined_cards' into cards table in the database - DOR
-                print("The Winning Deck of the match is:")
+                print("Database is updated with the Winning Deck of the match:")
                 print(winner_deck)
-                print("The Losing Deck of the match is:")
+                print("Database is updated with the Losing Deck of the match:")
                 print(loser_deck)
                 insert_decks(winner_deck, loser_deck)
                 insert_matches(match_url, winner, loser)
                 for card_name, card_info in mined_cards.items():
+                    print("%s was put into the database" % card_name)
                     insert_card(card_name, card_info)
                 card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
         except (WebDriverException, NoSuchWindowException, TypeError) as err:
