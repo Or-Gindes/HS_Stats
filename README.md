@@ -12,12 +12,11 @@
 * Challenges
 * Insights and conclusions
 * Additional Sources of information
-
-APPENDIX
-* Current status
-* Technologies
-* Setting up your project folder and environment
-* User manual
+* Appendix
+    * Current status
+    * Technologies
+    * Setting up your project folder and environment
+    * User manual
 
 ### Intro 
 
@@ -25,7 +24,9 @@ This project is a part of the ITC Data Science and Machine Learning Cohort.
 The project revolves around Data Mining, a task that Data Scientists often have to do. 
 The Data Mining technique which will be used in this project is web scraping which is a common
 Data Mining technique used to extract data from websites. 
-This README document will serve as a both a user instruction and a back story. 
+This README document will serve 2 goals:
+1. This document's main part tells the whole story behind the project. 
+2. The appendix provides the technical aspect of the project, including a complete manual on how to run it.
 
 
 ### What is the project about ? 
@@ -104,21 +105,22 @@ speed and connection conditions (for example when extracting an element that tak
 * http://lucidchart.com 
 * Cohort staff and fellows 
 
-### Appendix
+
+## Appendix
 
 ### Current status
-* In the process of switching from SQLite to MySQL database.
-    * As a result, a CLI implementation of the user root password will be inserted.
+* Changing the scripts from using SQLite to MySQL - done. 
+* Getting the MySQL user access details - Mechanism to be decided, in progress.
 
 ### Technologies 
 * Python 3
-* SQLite --> MySQL (to be changed)
+* MySQL
 
 ### Setting up your project folder and environment
 1. Make sure you have the following installed: 
     * Python 3 [(see here)](https://www.python.org/downloads/)
     * MySQL [(see here)](https://dev.mysql.com/downloads/installer/)
-        * (save your root user and password details!)
+        * save your root user and password details, the program will need these in order to construct and modify the database.
     * Google Chrome [(see here)](https://www.google.com/chrome/)
     * After installing Google Chrome, install chromedriver.exe
         * Firstly, check your Google Chrome version [here](https://www.whatismybrowser.com/detect/what-version-of-chrome-do-i-have) 
@@ -130,6 +132,7 @@ speed and connection conditions (for example when extracting an element that tak
 3. Create a virtual environment with required modules for the project (using the terminal / command prompt)
 
 ```
+# go into the project directory
 cd project-directory-path
 
 # you can replace 'env' with a name of your choosing.
@@ -146,7 +149,7 @@ deactivate
 ```
 
 ### User manual
-1. This project utilizes a CLI: 
+1. This project utilizes a CLI, allowing you to run it in different mechanisms:
     1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of iterations.
     2. Second argument is '-n' - type it with a number attached (for example -n5) to run the web-scraper n times (5 in this case).
        * You can't use both the '-i' and '-n' arguments. 
@@ -155,6 +158,7 @@ deactivate
 2. Now, using the terminal / command prompt:
 
 ```
+# go into the project directory
 cd project-directory-path
 
 # activate the environemnt first
@@ -170,4 +174,5 @@ python .\HS_Stats.py -n5 -q
 deactivate
 ```
 
+<br>
 3. Using MySQL workbench (or the helpful 'sqlalchemy' module) You can checkout the newly created database.
