@@ -12,6 +12,26 @@ from game_parser import game_parser
 from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from urllib3.exceptions import MaxRetryError
 from argparse_cli import parse_args_cli
+from Database import insert_card, insert_decks, insert_matches, create_database, create_tables, card_in_deck_update
+from card_mine import PASSWORD, DB_FILENAME
+import pymysql
+
+CREATE_NEW_DB = True
+
+
+def initializedb():
+    if CREATE_NEW_DB:  # set to True to delete database if one is found and create new one
+        try:
+            with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
+                con.execute("DROP DATABASE %s" % DB_FILENAME)
+                print("database found and deleted")
+        except pymysql.err.InternalError as e:
+            print(e)
+        except pymysql.err.OperationalError:
+            print("Wrong Password")
+            exit()
+        create_database()
+        create_tables()
 
 
 def main():
@@ -24,6 +44,7 @@ def main():
     number_of_iterations = arguments[1]
     # quiet - if not provided defaults to False. When set to True - suppress driver window popup
     quiet = arguments[2]
+    initializedb()
     i = 0
     if infinite:
         print("Warning! Hs_stats has been run with the infinite parameter and will collect data until interrupted "
@@ -43,6 +64,11 @@ def main():
                 print(winner_deck)
                 print("The Losing Deck of the match is:")
                 print(loser_deck)
+                insert_decks(winner_deck, loser_deck)
+                insert_matches(match_url, winner, loser)
+                for card_name, card_info in mined_cards.items():
+                    insert_card(card_name, card_info)
+                card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
         except (WebDriverException, NoSuchWindowException, TypeError) as err:
             print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
                   "for this error is you might have closed the driver window\nIf that is the case please consider "

@@ -70,7 +70,6 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
         # define an empty deck to be filled and later format against winner/loser input
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
-        mined_cards = {}  # mined cards which were not seen before will be collected here
         sets, types = [], []
         for link in links:
             card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards, quiet)
