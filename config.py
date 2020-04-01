@@ -29,10 +29,25 @@ VALID_DATA_LENGTH = 6
 PARSING_INDEX = 9
 
 """CLI constants"""
-MIN_NUM_OF_ARG = 2
+MIN_NUM_OF_ARG = 1
 
 """Database"""
-PASSWORD = ''
 DB_FILENAME = 'HS_Stats'
-CREATE_NEW_DB = False
+PASSWORD = 'shiralaro123'
+HOST_NAME = 'localhost'
 CARD_RELEVANT_DATA = 2
+SCHEME = 'Database scheme with the following tables will be created:\n'\
+        '_________________          ____________________     ________________     ____________\n' \
+        '\nMatches                    Decks                    Card_in_Deck         Cards\n' \
+        '_________________          ____________________     ________________     _____________\n' \
+        'Match_ID (PK)       ------ Deck_ID (PK) -----_      ID (PK)          --- Card_ID (PK)\n' \
+        'Match_URL           | |    Deck_Name          L---- Deck_ID (FK)     |   Card_name\n' \
+        'Winner_Deck_ID (FK) - |    Winner                   Card_ID (FK) ----    Class\n'\
+        'Loser_Deck_ID (FK) ---     Deck_Prefix              Number_of_Copies     Type\n'\
+        'Winner_Player_Rank         Class                                         Rarity\n'\
+        'Loser_Player_Rank          Deck_Cost                                     Card_set\n'\
+        '                           Average_Card_Cost                             Release_Year\n'\
+        '                           Most_Common_Set                               Cost\n'\
+        '                           Most_Common_Type                              Artist\n'\
+        '                           Number_of_Unique_Cards                        Mana_Cost\n'
+

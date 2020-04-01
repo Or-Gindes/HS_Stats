@@ -6,34 +6,23 @@ This function concentrates all database related functions - table creation
 """
 
 import pymysql
-import os
 import pandas as pd
 from game_parser import game_parser
 from feed_parser import feed_parser
-from card_mine import DB_FILENAME, PASSWORD
 from sqlalchemy import create_engine
 
-# TODO: Move these constants to the config file (UPDATE: check if any of these consts. are redundant)
-# TODO: converting the DB creation to MySQL complete. Now the insertion must be converted to MySQL.
 
-DB = os.path.join(os.path.dirname(os.path.realpath(__file__)), DB_FILENAME)
 SET_RELEASE_DIC = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'Descent of Dragons': 2019,
                    'Saviors of Uldum': 2019, 'Rise of Shadows': 2019, 'The Witchwood': 2018, 'Hall of Fame': 2014,
                    "Galakrond's Awakening": 2020, 'The Boomsday Project': 2018, "Rastakhan's Rumble": 2018}
 
 
-# def remove_rank_from_rank(rank_str):
-#     if 'Rank' in rank_str.split():
-#         return rank_str.split()[1]
-#     else:
-#         return rank_str
-
-
-def insert_matches(match_url, winner, loser):
+def insert_matches(match_url, winner, loser, database_parameters):
     """
     This function writes results of matches into matches table
     """
-    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                         db=database_parameters['Database_Name']) as con:
         con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
         deck_id = con.fetchall()[0][0]
         winner_rank = winner[1]
@@ -44,14 +33,15 @@ def insert_matches(match_url, winner, loser):
         con.execute(insert_command, insert_values)
 
 
-def insert_card(name, card_dict):
+def insert_card(name, card_dict, database_parameters):
     """This function gets the card's name and details and inserts it into the cards database,
     unless it's there already"""
     db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
     engine = create_engine(db_connection_str)
     df = pd.read_sql_query(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, engine)
     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
-        with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
+        with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                             db=database_parameters['Database_Name']) as con:
             insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
                                 Artist, Mana_Cost) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             card_dict['Release Year'] = SET_RELEASE_DIC[card_dict['Set']]
@@ -61,13 +51,14 @@ def insert_card(name, card_dict):
             print("%s was put into the database" % name)
 
 
-def insert_decks(winner_deck, loser_deck):
+def insert_decks(winner_deck, loser_deck, database_parameters):
     """Given a winning and losing deck from a match - insert into Decks table in the database"""
     decks = [loser_deck, winner_deck]
     insert_command = '''INSERT INTO Decks (Deck_Name, Winner, Deck_Prefix, Class, Deck_Cost, 
             Average_Card_Cost, Most_Common_Set, Most_Common_Type, Number_of_Unique_Cards) 
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                         db=database_parameters['Database_Name']) as con:
         for win, deck in enumerate(decks):
             # Insert winner and loser deck into the database / for loser win = 0 and for winner win = 1
             name = ' '.join([deck['Deck'], deck['Class']])
@@ -76,11 +67,12 @@ def insert_decks(winner_deck, loser_deck):
             con.execute(insert_command, insert_values)
 
 
-def card_in_deck_update(winner_cards, loser_cards):
+def card_in_deck_update(winner_cards, loser_cards, database_parameters):
     """Given cards from winning and losing deck in a match - insert into card_in_deck table in the database"""
     decks = [winner_cards, loser_cards]
     insert_command = 'INSERT INTO Card_In_Deck (Deck_ID, Card_ID, Number_of_Copies) VALUES (%s, %s, %s)'
-    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                         db=database_parameters['Database_Name']) as con:
         con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
         result = con.fetchall()[0][0]
         for index, deck in enumerate(decks):
@@ -94,12 +86,13 @@ def card_in_deck_update(winner_cards, loser_cards):
                 con.execute(insert_command, insert_values)
 
 
-def create_database():
-    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
-        con.execute("CREATE DATABASE %s" % DB_FILENAME)
+def create_database(database_parameters):
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root',
+                         passwd=database_parameters['Password']) as con:
+        con.execute("CREATE DATABASE %s" % database_parameters['Database_Name'])
 
 
-def create_tables():
+def create_tables(database_parameters):
     """Create tables in HS_stats Database"""
     create_table_decks = '''CREATE TABLE Decks (
         Deck_ID INT AUTO_INCREMENT,
@@ -144,14 +137,15 @@ def create_tables():
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
         PRIMARY KEY (ID))'''
     table_commands = [create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck]
-    # type your own password !
-    with pymysql.connect(host='localhost', user='root', passwd=PASSWORD, db=DB_FILENAME) as con:
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                         db=database_parameters['Database_Name']) as con:
         for command in table_commands:
             con.execute(command)
 
 
 def main():
     """Function used to test the decks_table creation and handling functions"""
+    database_parameters = {'Host_Name': 'localhost', 'Password': 'InsertYourPass', 'Database_Name': 'HS_Stats'}
     # Use to reset database as needed
     # try:
     #     with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
@@ -162,8 +156,8 @@ def main():
     # except pymysql.err.OperationalError:
     #     print("Wrong Password")
     #     exit()
-    # create_database()  # will throw an error if already exists
-    # create_tables()  # will throw an error if already exists
+    # create_database(database_parameters)  # will throw an error if already exists
+    # create_tables(database_parameters)  # will throw an error if already exists
     feed_results = feed_parser()
     for iterations, match in enumerate(feed_results):
         match_url, winner, loser = match[0], match[1], match[2]
@@ -172,12 +166,12 @@ def main():
         print('{} - winner deck {}, winner rank {}, looser deck {}, looser rank {}'.format(match_url, winner[0],
                                                                                            winner_rank, loser[0],
                                                                                            looser_rank))
-        winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, False)
-        insert_decks(winner_deck, loser_deck)
-        insert_matches(match_url, winner, loser)
+        winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, database_parameters, False)
+        insert_decks(winner_deck, loser_deck, database_parameters)
+        insert_matches(match_url, winner, loser, database_parameters)
         for card_name, card_info in mined_cards.items():
-            insert_card(card_name, card_info)
-        card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
+            insert_card(card_name, card_info, database_parameters)
+        card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], database_parameters)
         if iterations == 1:
             break
 

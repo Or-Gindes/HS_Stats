@@ -7,13 +7,15 @@ This function parses the data of a single card from the cards Hsreplay page
 
 from get_driver import get_driver
 from time import sleep
-from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, PASSWORD, DB_FILENAME, CARD_RELEVANT_DATA
+from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, CARD_RELEVANT_DATA
 import pandas as pd
 from sqlalchemy import create_engine
 
 
-def from_database(card_name):
-    db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
+def from_database(card_name, database_parameters):
+    db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
+                                                           database_parameters['Host_Name'],
+                                                           database_parameters['Database_Name'])
     engine = create_engine(db_connection_str)
     card = pd.read_sql_query(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, engine)
     return card
@@ -38,14 +40,14 @@ def format_card(data):
         return data
 
 
-def card_mine(url, quiet=False):
+def card_mine(url, database_parameters, quiet=False):
     """
     :param quiet: when set to True suppress chrome window popup
     :param url: input url to specific card in hs.replay database
     :return: mine card data and organise into dictionary
     """
     card_name = url.rsplit('/', 1)[1].title()
-    card = from_database(card_name)  # Check if card is already found in database
+    card = from_database(card_name, database_parameters)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
         print("Card data for '%s' was pulled from database" % card_name)
         card_info = {col: card[col][0] for col in card.columns[CARD_RELEVANT_DATA:]}
@@ -68,8 +70,9 @@ def card_mine(url, quiet=False):
 
 def main():
     """test main card_mine function"""
+    database_parameters = {'Host_Name': 'localhost', 'Password': 'InsertYourPass', 'Database_Name': 'HS_Stats'}
     card_url = 'https://hsreplay.net/cards/47222/zap'
-    print(card_mine(card_url))
+    print(card_mine(card_url, database_parameters))
 
 
 if __name__ == '__main__':

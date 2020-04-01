@@ -12,7 +12,7 @@ from time import sleep
 from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT
 
 
-def get_card(link, deck, mined_cards, quiet):
+def get_card(link, deck, mined_cards, database_parameters, quiet):
     """
     :param mined_cards: cards collected so far for this deck
     :param deck: the deck currently being filled
@@ -22,7 +22,7 @@ def get_card(link, deck, mined_cards, quiet):
     card_url = link.get_attribute("href")  # get link to card - used to with card_mine to get card info
     card_name = card_url.rsplit('/', 1)[1].title()
     if card_name not in deck['Cards'].keys():
-        card_dict = card_mine(card_url, quiet)
+        card_dict = card_mine(card_url, database_parameters, quiet)
         try:
             count = int(link.find_element_by_class_name("card-count").get_attribute("innerHTML"))
         except (ValueError, NoSuchElementException):
@@ -53,7 +53,7 @@ def format_deck(win_or_lose_deck, collected_deck):
             'Cards': collected_deck['Cards']}
 
 
-def get_decks(driver, winner_deck, loser_deck, quiet):
+def get_decks(driver, winner_deck, loser_deck, database_parameters, quiet):
     """use driver to get match info and parse it into the decks in the match
     :param quiet: indicates whether or not to suppress driver window popup
     :param loser_deck: name of losing deck passed from feed_parser
@@ -72,7 +72,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
         sets, types = [], []
         for link in links:
-            card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards, quiet)
+            card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards, database_parameters, quiet)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
                 # print(card_name, card_dict, count)    # for debugging
@@ -97,7 +97,7 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
     return winning_deck, losing_deck, mined_cards
 
 
-def game_parser(url, winner_deck, loser_deck, quiet=False):
+def game_parser(url, winner_deck, loser_deck, database_parameters, quiet=False):
     """
     :param quiet: quiet defaults to False but if set to True it will suppress chrome driver window popup
     :param winner_deck: deck name and rank passed in this slot belong to the winning deck
@@ -115,7 +115,7 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     while mined_cards is False:
         sleep(WAIT)  # Sleep is not required but useful when internet is unstable
         try:
-            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
+            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, database_parameters, quiet)
         except TypeError:
             mined_cards = False
     driver.quit()
@@ -124,8 +124,10 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
 
 def main():
     """Function used to test game_parser function"""
+    database_parameters = {'Host_Name': 'localhost', 'Password': 'InsertYourPass', 'Database_Name': 'HS_Stats'}
     game_url = 'https://hsreplay.net/replay/sS46KjLBpoouj9RxbQGqGR'
-    winner_deck, loser_deck = game_parser(game_url, ('Mech Hunter', '1'), ('Galakrond Rogue', 'Legend 1000'))
+    winner_deck, loser_deck = game_parser(game_url, ('Mech Hunter', '1'), ('Galakrond Rogue', 'Legend 1000'),
+                                          database_parameters)
     print("The Winning Deck of the match is:")
     print(winner_deck)
     print("The Losing Deck of the match is:")

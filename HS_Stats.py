@@ -13,25 +13,32 @@ from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from urllib3.exceptions import MaxRetryError
 from argparse_cli import parse_args_cli
 from Database import insert_card, insert_decks, insert_matches, create_database, create_tables, card_in_deck_update
-from config import PASSWORD, DB_FILENAME, CREATE_NEW_DB  # TODO: get this input from user, not necessarily in CLI
+from config import SCHEME
 import pymysql
 
 
-def initializedb():
-    if CREATE_NEW_DB:  # set to True to delete database if one is found and create new one
-        try:
-            with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
-                con.execute("DROP DATABASE %s" % DB_FILENAME)
-                print("database found and deleted")
-        except pymysql.err.InternalError as e:
-            print(e)
-            exit()
-        except pymysql.err.OperationalError:
-            print("Wrong Password")
-            exit()
-        create_database()
-        create_tables()
-        print("Database %s was created" % DB_FILENAME)
+def initialize_db(database_parameters, overwrite):
+    try:  # try connecting using given database_parameters
+        with pymysql.connect(host=database_parameters['Host_Name'], user='root',
+                             passwd=database_parameters['Password']) as con:
+            if overwrite:  # if overwrite - try to drop database
+                con.execute("DROP DATABASE %s" % database_parameters['Database_Name'])
+                print("Old database found and deleted")
+    # except pymysql.err.InternalError as e:
+    #     print(e)
+    #     exit()
+    except pymysql.err.OperationalError:
+        print("Error - Wrong Password or Host name were provided for MySQL")
+        exit()
+    else:
+        try:  # Try to create database, if it was dropped or did not exists it will be created otherwise except
+            create_database(database_parameters)
+            create_tables(database_parameters)
+            print(SCHEME)
+            print("Database '%s' was created" % database_parameters['Database_Name'])
+        except pymysql.err.ProgrammingError:    # Database was found and will be used
+            print("Database named '%s' was found and will be used (was not overwritten)" %
+                  database_parameters['Database_Name'])
 
 
 def main():
@@ -44,7 +51,11 @@ def main():
     number_of_iterations = arguments[1]
     # quiet - if not provided defaults to False. When set to True - suppress driver window popup
     quiet = arguments[2]
-    initializedb()
+    # database_parameters holds information to connect to users MySQL Database
+    database_parameters = {'Host_Name': arguments[3], 'Password': arguments[4], 'Database_Name': arguments[5]}
+    # When set to True and a database with dbname is found the database will be reset
+    overwrite = arguments[6]
+    initialize_db(database_parameters, overwrite)
     i = 0
     if infinite:
         print("Warning! Hs_stats has been run with the infinite parameter and will collect data until interrupted "
@@ -57,16 +68,16 @@ def main():
             for match in matches:
                 print(match)
                 match_url, winner, loser = match[0], match[1], match[2]
-                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
+                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, database_parameters, quiet)
                 print("\nDatabase is updated with the Winning Deck of the match:")
                 print(winner_deck)
                 print("\nDatabase is updated with the Losing Deck of the match:")
                 print(loser_deck)
-                insert_decks(winner_deck, loser_deck)
-                insert_matches(match_url, winner, loser)
+                insert_decks(winner_deck, loser_deck, database_parameters)
+                insert_matches(match_url, winner, loser, database_parameters)
                 for card_name, card_info in mined_cards.items():
-                    insert_card(card_name, card_info)
-                card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'])
+                    insert_card(card_name, card_info, database_parameters)
+                card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], database_parameters)
     except (WebDriverException, NoSuchWindowException, TypeError) as err:
         print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
               "for this error is you might have closed the driver window\nIf that is the case please consider "
