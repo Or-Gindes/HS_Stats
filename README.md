@@ -60,10 +60,17 @@ and the data gathered is used to make business and balance decisions on a daily 
 
 We used the website http://hsreplay.net, which records an average of 700,000 matches each day and serves as a
 private statistical monitor of the game and holds many kinds of data.
-   1. We parsed the live game feed (updated about every second) to get the players' decks and match results.
-   2. We parsed the decks to get the card names that it consists of.
-   3. For each card in the players' decks, we extracted its useful info.
+We've built a web scraper which parses:
+   1. The live game feed (updated about every second) to get the players' decks and match results.
+   2. For each match extracted from the feed, parses the decks to get the card names that it consists of.
+   3. For each card in the players' decks, extracts it's characteristics.
 
+* What does the web scraper do in one iteration ?
+    * reads from the live feed once. 
+    * extracts up to 11 matches. 
+    * extracts up to different 660 cards (!)
+    
+    
 All of this scraped data will be used for...
 
 ### Database creation
@@ -131,48 +138,49 @@ speed and connection conditions (for example when extracting an element that tak
 
 3. Create a virtual environment with required modules for the project (using the terminal / command prompt)
 
-```
-# go into the project directory
-cd project-directory-path
-
-# you can replace 'env' with a name of your choosing.
-python -m venv env
-
-# you must activate the environemnt first
-.\env\Scripts\activate
-
-# installing the required modules
-pip install -r requirements.txt
-
-# exit the virtual environment for now
-deactivate
-```
+    ```
+    # go into the project directory
+    cd project-directory-path
+    
+    # you can replace 'env' with a name of your choosing.
+    python -m venv env
+    
+    # you must activate the environemnt first
+    .\env\Scripts\activate
+    
+    # installing the required modules
+    pip install -r requirements.txt
+    
+    # exit the virtual environment for now
+    deactivate
+    ```
 
 ### User manual
 1. This project utilizes a CLI, allowing you to run it in different mechanisms:
-    1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of iterations.
+    1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of times.
     2. Second argument is '-n' - type it with a number attached (for example -n5) to run the web-scraper n times (5 in this case).
        * You can't use both the '-i' and '-n' arguments. 
     3. Third argument is '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower)
 
+    * Reminder: An iteration equals to one live feed parsing. 
+
 2. Now, using the terminal / command prompt:
 
-```
-# go into the project directory
-cd project-directory-path
+    ```
+    # go into the project directory
+    cd project-directory-path
+    
+    # activate the environemnt first
+    .\env\Scripts\activate
+    
+    # activate the web scraper for infinite number of iterations, with quiet mode (EXAMPLE 1)
+    python .\HS_Stats.py -i -q
+    
+    # activate the web scraper for 5 iterations, without quiet mode (EXAMPLE 2)
+    python .\HS_Stats.py -n5 
+    
+    # exit the virtual environment for now
+    deactivate
+    ```
 
-# activate the environemnt first
-.\env\Scripts\activate
-
-# activate the web scraper for infinite number of iterations, with quiet mode (EXAMPLE 1)
-python .\HS_Stats.py -i
-
-# activate the web scraper for 5 iterations, without quiet mode (EXAMPLE 2)
-python .\HS_Stats.py -n5 -q
-
-# exit the virtual environment for now
-deactivate
-```
-
-<br>
 3. Using MySQL workbench (or the helpful 'sqlalchemy' module) You can checkout the newly created database.
