@@ -10,6 +10,7 @@ from time import sleep
 from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, CARD_RELEVANT_DATA
 import pandas as pd
 from sqlalchemy import create_engine
+from argparse_cli import parse_args_cli
 
 
 def from_database(card_name, database_parameters):
@@ -40,12 +41,14 @@ def format_card(data):
         return data
 
 
-def card_mine(url, database_parameters, quiet=False):
+def card_mine(url, quiet=False):
     """
     :param quiet: when set to True suppress chrome window popup
     :param url: input url to specific card in hs.replay database
     :return: mine card data and organise into dictionary
     """
+    arguments = parse_args_cli()
+    database_parameters = {'Host_Name': arguments[3], 'Password': arguments[4], 'Database_Name': arguments[5]}
     card_name = url.rsplit('/', 1)[1].title()
     card = from_database(card_name, database_parameters)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
@@ -70,9 +73,8 @@ def card_mine(url, database_parameters, quiet=False):
 
 def main():
     """test main card_mine function"""
-    database_parameters = {'Host_Name': 'localhost', 'Password': 'InsertYourPass', 'Database_Name': 'HS_Stats'}
     card_url = 'https://hsreplay.net/cards/47222/zap'
-    print(card_mine(card_url, database_parameters))
+    print(card_mine(card_url))
 
 
 if __name__ == '__main__':

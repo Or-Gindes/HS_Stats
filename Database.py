@@ -10,11 +10,7 @@ import pandas as pd
 from game_parser import game_parser
 from feed_parser import feed_parser
 from sqlalchemy import create_engine
-
-
-SET_RELEASE_DIC = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'Descent of Dragons': 2019,
-                   'Saviors of Uldum': 2019, 'Rise of Shadows': 2019, 'The Witchwood': 2018, 'Hall of Fame': 2014,
-                   "Galakrond's Awakening": 2020, 'The Boomsday Project': 2018, "Rastakhan's Rumble": 2018}
+from config import SET_RELEASE_DICT
 
 
 def insert_matches(match_url, winner, loser, database_parameters):
@@ -36,8 +32,9 @@ def insert_matches(match_url, winner, loser, database_parameters):
 def insert_card(name, card_dict, database_parameters):
     """This function gets the card's name and details and inserts it into the cards database,
     unless it's there already"""
-    db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (database_parameters['Password'],
-                                                                  database_parameters['Database_Name'])
+    db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
+                                                           database_parameters['Host_Name'],
+                                                           database_parameters['Database_Name'])
     engine = create_engine(db_connection_str)
     df = pd.read_sql_query(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, engine)
     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
@@ -45,7 +42,7 @@ def insert_card(name, card_dict, database_parameters):
                              db=database_parameters['Database_Name']) as con:
             insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
                                 Artist, Mana_Cost) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-            card_dict['Release Year'] = SET_RELEASE_DIC[card_dict['Set']]
+            card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
             insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
                              card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost']]
             con.execute(insert_command, insert_values)
@@ -152,11 +149,6 @@ def main():
     #     with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
     #         con.execute("DROP DATABASE %s" % DB_FILENAME)
     #         print("database found and deleted")
-    # except pymysql.err.InternalError as e:
-    #     print(e)
-    # except pymysql.err.OperationalError:
-    #     print("Wrong Password")
-    #     exit()
     # create_database(database_parameters)  # will throw an error if already exists
     # create_tables(database_parameters)  # will throw an error if already exists
     feed_results = feed_parser()
@@ -167,7 +159,7 @@ def main():
         print('{} - winner deck {}, winner rank {}, looser deck {}, looser rank {}'.format(match_url, winner[0],
                                                                                            winner_rank, loser[0],
                                                                                            looser_rank))
-        winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, database_parameters, False)
+        winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, False)
         insert_decks(winner_deck, loser_deck, database_parameters)
         insert_matches(match_url, winner, loser, database_parameters)
         for card_name, card_info in mined_cards.items():
@@ -179,35 +171,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# def create_matches_table():
-#     """
-#         This function creates the matches table within the Hs_stats database.
-#     """
-#     with sqlite3.connect(DB_FILENAME) as con:
-#         cur = con.cursor()
-#         cur.execute('''CREATE TABLE matches (
-#                             Match_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-#                             Match_URL VARCHAR,
-#                             FOREIGN KEY (Winner_Deck_ID) REFERENCES decks(Deck_ID))
-#                             FOREIGN KEY (Looser_Deck_ID) REFERENCES decks(Deck_ID))
-#                             Winner_Player_Rank VARCHAR,
-#                             Looser_Player_Rank VARCHAR)''')
-#         con.commit()
-#         cur.close()
-
-
-# What we need:
-#    Winner_Deck_ID = decks.Deck_ID WHERE decks.Deck_Name = winner_deck_name AND decks.Winner = True
-#    Looser_Deck_ID = decks.Deck_ID WHERE decks.Deck_Name = winner_deck_name AND decks.Winner = False
-#
-#
-# def main():
-#     create_matches_table()
-#     update_matches_table()
-#
-#
-# if __name__ == '__main__':
-#     main()
-#
-# checking

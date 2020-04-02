@@ -23,6 +23,9 @@ CARD_URL_PATTERN = r'https://hsreplay.net/cards'
 
 """Heartstone related constants"""
 CARDS_IN_DECK = 30
+SET_RELEASE_DICT = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'Descent of Dragons': 2019,
+                   'Saviors of Uldum': 2019, 'Rise of Shadows': 2019, 'The Witchwood': 2018, 'Hall of Fame': 2014,
+                   "Galakrond's Awakening": 2020, 'The Boomsday Project': 2018, "Rastakhan's Rumble": 2018}
 
 """Hsreplay website related constants"""
 VALID_DATA_LENGTH = 6

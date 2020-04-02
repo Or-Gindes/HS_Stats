@@ -68,11 +68,11 @@ def main():
             print("Found %d matches to parse" % (len(matches)))
             print("---------------------------------------\n")
             for match_num, match in enumerate(matches, start=1):
-                print("Now parsing match %d of %d" % (match_num, len(matches)))
-                print("Match URL address is: %s" % (match[0]))
-                print(match[1][0] + " VS. " + match[2][0] + "\n")
                 match_url, winner, loser = match[0], match[1], match[2]
-                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, database_parameters, quiet)
+                print("Now parsing match %d of %d" % (match_num, len(matches)))
+                print("Match URL address is: %s" % match_url)
+                print(winner[0] + " VS. " + loser[0] + "\n")
+                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
                 print("\nDatabase updates:")
                 print("---------------------------------------\n")
                 print("Database is updated with the Winning Deck of the match:")
