@@ -89,11 +89,12 @@ def feed_parser(quiet=False):
     # finding out who won in each game.
     left_players_win_lose = []
     for elem in left_win_indicator_elements[PARSING_INDEX:]:
-        elem = elem.find_elements_by_xpath(".//img[@class='winner-icon']")
+        elem = elem.find_elements_by_xpath(".//img[@alt='Crown']")
         if len(elem) > 0:
             left_players_win_lose.append(1)
         else:
             left_players_win_lose.append(0)
+    print(left_players_win_lose)
     driver.close()
 
     # using the feed_matches() function to get wanted format - a list of tuples where each tuple is a match
