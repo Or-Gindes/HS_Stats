@@ -36,7 +36,8 @@ def insert_matches(match_url, winner, loser, database_parameters):
 def insert_card(name, card_dict, database_parameters):
     """This function gets the card's name and details and inserts it into the cards database,
     unless it's there already"""
-    db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (PASSWORD, DB_FILENAME)
+    db_connection_str = 'mysql+pymysql://root:%s@localhost/%s' % (database_parameters['Password'],
+                                                                  database_parameters['Database_Name'])
     engine = create_engine(db_connection_str)
     df = pd.read_sql_query(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, engine)
     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted

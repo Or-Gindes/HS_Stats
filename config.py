@@ -33,7 +33,7 @@ MIN_NUM_OF_ARG = 1
 
 """Database"""
 DB_FILENAME = 'HS_Stats'
-PASSWORD = 'shiralaro123'
+PASSWORD = 'root'
 HOST_NAME = 'localhost'
 CARD_RELEVANT_DATA = 2
 SCHEME = 'Database scheme with the following tables will be created:\n'\

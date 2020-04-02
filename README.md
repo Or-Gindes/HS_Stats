@@ -17,7 +17,7 @@
     * Technologies
     * Setting up your project folder and environment
     * User manual
-    * Database
+    * Utilizing your database
 
 ### Intro 
 
@@ -92,6 +92,7 @@ Take note of the different tables and columns.
 * Inconsistencies in web-page structure in response to connection issues makes debugging difficult 
   (due to difficulties in recreating the bug) and necessitates flexible code
 * Constructing multiple connected functions in an efficient way (no code reuse for example in opening a driver).
+* Nature of the extracted data changes during the project (Ranks)
 
 ### Insights and conclusions 
 
@@ -118,7 +119,7 @@ speed and connection conditions (for example when extracting an element that tak
 
 ### Current status
 * Changing the scripts from using SQLite to MySQL - done. 
-* Getting the MySQL user access details - Mechanism to be decided, in progress.
+* Getting the MySQL user access details - done.
 * Providing useful SQL commands in the appendix - in progress.
 
 ### Technologies 
@@ -158,12 +159,19 @@ deactivate
 ```
 
 ### User manual
-1. This project utilizes a CLI, allowing you to run it in different mechanisms:
-    1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of times.
-    2. Second argument is '-n' - type it with a number attached (for example -n5) to run the web-scraper n times (5 in this case).
-       * You can't use both the '-i' and '-n' arguments. 
-    3. Third argument is '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower)
-
+1. This project utilizes a CLI, allowing you to customize the program's behaviour:
+    
+    1. <u>Program Behaviour arguments:</u>
+        1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of times.
+        2. Second argument is '-n' - type it with a number attached (for example -n5) to run the web-scraper n times (5 in this case).
+            * You can't use both the '-i' and '-n' arguments. 
+        3. Third argument is '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower).
+    2. <u>Database arguments:</u>
+        1. Fourth argument is '-l' - the hostname - default is set to 'localhost'.
+        2. Fifth argument is '-p' - the password - default is set to 'root'.
+        3. Sixth argument is '-d' - the database name - default is set to 'HS_Stats'.
+        4. Seventh argument is '-o' - overwriting option - If you want to overwrite your existing table. 
+        
     * Reminder: An iteration equals to one live feed parsing. 
 
 2. Now, using the terminal / command prompt:
@@ -185,6 +193,6 @@ python .\HS_Stats.py -n5
 deactivate
 ```
 
-### Database
+### Utilizing your database
 1. Using MySQL workbench (or the helpful 'sqlalchemy' module) You can checkout the newly created database.
 2. Useful commands - To be continued.
