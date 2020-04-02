@@ -94,7 +94,6 @@ def feed_parser(quiet=False):
             left_players_win_lose.append(1)
         else:
             left_players_win_lose.append(0)
-    print(left_players_win_lose)
     driver.close()
 
     # using the feed_matches() function to get wanted format - a list of tuples where each tuple is a match
