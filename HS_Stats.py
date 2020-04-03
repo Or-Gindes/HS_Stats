@@ -91,9 +91,9 @@ def main():
               "for this error is you might have closed the driver window\nIf that is the case please consider "
               "running the program in quite mode (-q) to suppress driver window pop-up\n")
         print("More information on error: " + err.args[0])
+        exit()
     except (KeyboardInterrupt, MaxRetryError):
         print("Thank you for using Hs Stats - HearthStone matches webscrapper")
-    finally:
         exit()
 
 
