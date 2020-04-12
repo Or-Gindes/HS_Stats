@@ -170,9 +170,9 @@ def create_tables(database_parameters):
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
         PRIMARY KEY (ID))'''
     create_table_mechanics = '''CREATE TABLE Mechanics (
-            Mechanics_ID INT AUTO_INCREMENT,
-            Mechanic_Name VARCHAR(100),
-            PRIMARY KEY (Mechanics_ID))'''
+        Mechanics_ID INT AUTO_INCREMENT,
+        Mechanic_Name VARCHAR(100),
+        PRIMARY KEY (Mechanics_ID))'''
     create_table_card_mechanics = '''CREATE TABLE Card_Mechanics (
         Card_Mechanics_ID INT AUTO_INCREMENT,
         Card_ID INT,
