@@ -26,7 +26,10 @@ def card_api(name):
     except KeyError:
         mechanics_list = ['No Mechanics']
     if response['type'] == 'Minion':
-        attack, health = response['attack'], response['health']
+        try:
+            attack, health = response['attack'], response['health']
+        except KeyError:
+            attack, health = 0, response['health']
     elif response['type'] == 'Weapon':
         attack, health = response['attack'], response['durability']
     else:
