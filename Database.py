@@ -14,6 +14,7 @@ from config import SET_RELEASE_DICT
 from datetime import date
 
 
+
 def insert_matches(match_url, winner, loser, database_parameters):
     """
     This function writes results of matches into matches table
@@ -49,9 +50,36 @@ def insert_card(name, card_dict, database_parameters):
                 # if a new set was released and isn't found in the dictionary the current year will be taken
                 card_dict['Release Year'] = date.today().year
             insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
-                             card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost']]
+                             card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
+                             card_dict['Attack'], card_dict['Health']]
             con.execute(insert_command, insert_values)
             print("%s was put into the database" % name)
+
+
+def insert_mechanics(card_info, database_parameters):
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                         db=database_parameters['Database_Name']) as con:
+        mechanics_list = ' '.join(card_info['Mechanics'])
+        # mechanics_list = ' '.join(card_api(card_name)['Mechanics'])
+        insert_command = '''INSERT INTO Mechanics (
+                   Mechanic_Name) VALUES (%s)'''
+        con.execute(insert_command, mechanics_list)
+
+
+def insert_card_mechanics(card_name, card_info, database_parameters):
+    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
+                         db=database_parameters['Database_Name']) as con:
+        # gather
+        con.execute('SELECT Сard_ID, Card_Name FROM Cards WHERE Card_Name = VALUES (%s)', card_name)
+        card_id = con.fetchall()[0][0]
+        mechanics_list = ' '.join(card_info['Mechanics'])
+        con.execute('SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = VALUES (%s)', mechanics_list)  # ugly?
+        mechanics_id = con.fetchall()[0][0]
+        # insert
+        insert_command = '''INSERT INTO Card_Mechanics (
+           Card_ID, Mechanic_ID) VALUES (%s, %s)'''
+        insert_values = [card_id, mechanics_id]
+        con.execute(insert_command, insert_values)
 
 
 def insert_decks(winner_deck, loser_deck, database_parameters):
@@ -130,6 +158,8 @@ def create_tables(database_parameters):
         Cost INT,
         Artist VARCHAR(100),
         Mana_Cost INT,
+        Attack INT,
+        Health INT,
         PRIMARY KEY (Card_ID))'''
     create_table_card_in_deck = '''CREATE TABLE Card_In_Deck (
         ID INT AUTO_INCREMENT,
@@ -139,7 +169,19 @@ def create_tables(database_parameters):
         FOREIGN KEY(Deck_ID) REFERENCES Decks(Deck_ID),
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
         PRIMARY KEY (ID))'''
-    table_commands = [create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck]
+    create_table_mechanics = '''CREATE TABLE Mechanics (
+            Mechanics_ID INT AUTO_INCREMENT,
+            Mechanic_Name VARCHAR(100),
+            PRIMARY KEY (Mechanics_ID))'''
+    create_table_card_mechanics = '''CREATE TABLE Card_Mechanics (
+        Card_Mechanics_ID INT AUTO_INCREMENT,
+        Card_ID INT,
+        Mechanic_ID INT,
+        FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
+        FOREIGN KEY(Mechanic_ID) REFERENCES Mechanics(Mechanics_ID),
+        PRIMARY KEY (Card_Mechanics_ID))'''
+    table_commands = [create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck,
+                      create_table_mechanics, create_table_card_mechanics]
     with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
                          db=database_parameters['Database_Name']) as con:
         for command in table_commands:
@@ -148,7 +190,7 @@ def create_tables(database_parameters):
 
 def main():
     """Function used to test the decks_table creation and handling functions"""
-    database_parameters = {'Host_Name': 'localhost', 'Password': 'InsertYourPass', 'Database_Name': 'HS_Stats'}
+    database_parameters = {'Host_Name': 'localhost', 'Password': 'YourPasswrd', 'Database_Name': 'HS_Stats'}
     # Use to reset database as needed
     # try:
     #     with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
@@ -169,6 +211,8 @@ def main():
         insert_matches(match_url, winner, loser, database_parameters)
         for card_name, card_info in mined_cards.items():
             insert_card(card_name, card_info, database_parameters)
+            insert_mechanics(card_info, database_parameters)
+            insert_card_mechanics(card_name, card_info, database_parameters)
         card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], database_parameters)
         if iterations == 1:
             break
