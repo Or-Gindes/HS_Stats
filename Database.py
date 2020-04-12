@@ -11,6 +11,7 @@ from game_parser import game_parser
 from feed_parser import feed_parser
 from sqlalchemy import create_engine
 from config import SET_RELEASE_DICT
+from datetime import date
 
 
 def insert_matches(match_url, winner, loser, database_parameters):
@@ -42,7 +43,11 @@ def insert_card(name, card_dict, database_parameters):
                              db=database_parameters['Database_Name']) as con:
             insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
                                 Artist, Mana_Cost) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-            card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
+            try:
+                card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
+            except KeyError:
+                # if a new set was released and isn't found in the dictionary the current year will be taken
+                card_dict['Release Year'] = date.today().year
             insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
                              card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost']]
             con.execute(insert_command, insert_values)

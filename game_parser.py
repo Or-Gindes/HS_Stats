@@ -9,10 +9,11 @@ from get_driver import get_driver
 from _collections import defaultdict
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
-from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT
+from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT, MATCH_DATA_LENGTH
+from card_api import card_api
 
 
-def get_card(link, deck, mined_cards, quiet):
+def get_card(link, deck, mined_cards):
     """
     :param mined_cards: cards collected so far for this deck
     :param deck: the deck currently being filled
@@ -20,9 +21,10 @@ def get_card(link, deck, mined_cards, quiet):
     :return: card: dictionary of card data / count: number of times a card appears in the deck
     """
     card_url = link.get_attribute("href")  # get link to card - used to with card_mine to get card info
-    card_name = card_url.rsplit('/', 1)[1].title()
+    card_name = link.find_element_by_class_name("card-tile").get_attribute("aria-label")
     if card_name not in deck['Cards'].keys():
-        card_dict = card_mine(card_url, quiet)
+        card_dict = card_mine(card_url, card_name)
+        card_dict.update(card_api(card_name))
         try:
             count = int(link.find_element_by_class_name("card-count").get_attribute("innerHTML"))
         except (ValueError, NoSuchElementException):
@@ -53,16 +55,15 @@ def format_deck(win_or_lose_deck, collected_deck):
             'Cards': collected_deck['Cards']}
 
 
-def get_decks(driver, winner_deck, loser_deck, quiet):
+def get_decks(driver, winner_deck, loser_deck):
     """use driver to get match info and parse it into the decks in the match
-    :param quiet: indicates whether or not to suppress driver window popup
     :param loser_deck: name of losing deck passed from feed_parser
     :param winner_deck: name of winning deck passed from feed_parser
     :param driver: a functional driver
     :return: use sub-function to mine cards based on links, format decks and return them with added information
     """
     match_info = driver.find_elements_by_class_name("card-list")
-    if len(match_info) < 2:  # indication of missing data
+    if len(match_info) < MATCH_DATA_LENGTH:  # indication of missing data
         print("Failed to get match data, attempting again")
         return False
     mined_cards = {}  # mined cards which were not seen before will be collected here
@@ -72,10 +73,10 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
         links = deck_in_match.find_elements_by_tag_name("a")  # deck is made up of cards with links to cards
         sets, types = [], []
         for link in links:
-            card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards, quiet)
+            card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
-                # print(card_name, card_dict, count)    # for debugging
+                print(card_name, card_dict, count)    # for debugging
                 mined_cards[card_name] = card_dict  # collect cards which were not already found in the database
             sets.append(card_dict['Set'])
             types.append(card_dict['Type'])
@@ -94,7 +95,11 @@ def get_decks(driver, winner_deck, loser_deck, quiet):
             winning_deck = format_deck(winner_deck, deck)
         elif deck['Class'] in loser_deck[0]:
             losing_deck = format_deck(loser_deck, deck)
-    return winning_deck, losing_deck, mined_cards
+    try:
+        return winning_deck, losing_deck, mined_cards
+    except NameError:
+        print("Bad input provided from feed parser")
+        return {}, {}, mined_cards
 
 
 def game_parser(url, winner_deck, loser_deck, quiet=False):
@@ -115,9 +120,9 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     while mined_cards is False:
         sleep(WAIT)  # Sleep is not required but useful when internet is unstable
         try:
-            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck, quiet)
+            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
         except TypeError:
-            mined_cards = False
+            mined_cards = {}
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 

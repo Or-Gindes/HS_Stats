@@ -25,10 +25,12 @@ CARD_URL_PATTERN = r'https://hsreplay.net/cards'
 CARDS_IN_DECK = 30
 SET_RELEASE_DICT = {'Basic': 2014, 'Classic': 2014, 'Ashes of Outland': 2020, 'Descent of Dragons': 2019,
                    'Saviors of Uldum': 2019, 'Rise of Shadows': 2019, 'The Witchwood': 2018, 'Hall of Fame': 2014,
-                   "Galakrond's Awakening": 2020, 'The Boomsday Project': 2018, "Rastakhan's Rumble": 2018}
+                   "Galakrond's Awakening": 2020, 'The Boomsday Project': 2018, "Rastakhan's Rumble": 2018,
+                    'Demon Hunter Initiate': 2020}
 
 """Hsreplay website related constants"""
 VALID_DATA_LENGTH = 6
+MATCH_DATA_LENGTH = 2
 PARSING_INDEX = 9
 
 """CLI constants"""
@@ -54,3 +56,14 @@ SCHEME = 'Database scheme with the following tables will be created:\n'\
         '                           Most_Common_Type                              Artist\n'\
         '                           Number_of_Unique_Cards                        Mana_Cost\n'
 
+"""API"""
+STATUS_CODE_OK = 200
+INDENT = 2
+API_BASE_URL = "https://omgvamp-hearthstone-v1.p.rapidapi.com/cards/"
+
+HEADERS = {
+    'x-rapidapi-host': "omgvamp-hearthstone-v1.p.rapidapi.com",
+    'x-rapidapi-key': "9f8ac6b17fmsh4cf7559f8afc652p19a0fbjsn2d85fb0fc588"  # TODO: This needs to replaced with key provided by user
+}
+
+QUERYSTRING = {"collectible": "1"}
