@@ -43,7 +43,7 @@ def insert_card(name, card_dict, database_parameters):
         with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
                              db=database_parameters['Database_Name']) as con:
             insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
-                                Artist, Mana_Cost) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+                                Artist, Mana_Cost, Attack, Health) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
             try:
                 card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
             except KeyError:
@@ -59,27 +59,43 @@ def insert_card(name, card_dict, database_parameters):
 def insert_mechanics(card_info, database_parameters):
     with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
                          db=database_parameters['Database_Name']) as con:
-        mechanics_list = ' '.join(card_info['Mechanics'])
-        # mechanics_list = ' '.join(card_api(card_name)['Mechanics'])
+        mechanics_list = card_info['Mechanics']
+        # mechanics_list = card_api(card_name)['Mechanics'] # the same, yes?
         insert_command = '''INSERT INTO Mechanics (
                    Mechanic_Name) VALUES (%s)'''
-        con.execute(insert_command, mechanics_list)
+        db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
+                                                               database_parameters['Host_Name'],
+                                                               database_parameters['Database_Name'])
+        engine = create_engine(db_connection_str)
+        for mechanic in mechanics_list:
+            df = pd.read_sql_query(r'SELECT 1 FROM Mechanics WHERE Mechanic_Name = "%s"' % mechanic, engine)
+            if df.shape[0] == 0:  # This means that this mechanic was not found in Mechanics and should be inserted
+                con.execute(insert_command, mechanic)
+                print(f'Mechanic {mechanic} was inserted into the database') # do we want to see it?
 
 
 def insert_card_mechanics(card_name, card_info, database_parameters):
     with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
                          db=database_parameters['Database_Name']) as con:
-        # gather
-        con.execute('SELECT Сard_ID, Card_Name FROM Cards WHERE Card_Name = VALUES (%s)', card_name)
+        con.execute('SELECT Card_ID, Card_Name FROM Cards WHERE Card_Name = "%s"' % card_name)
         card_id = con.fetchall()[0][0]
-        mechanics_list = ' '.join(card_info['Mechanics'])
-        con.execute('SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = VALUES (%s)', mechanics_list)  # ugly?
-        mechanics_id = con.fetchall()[0][0]
-        # insert
-        insert_command = '''INSERT INTO Card_Mechanics (
-           Card_ID, Mechanic_ID) VALUES (%s, %s)'''
-        insert_values = [card_id, mechanics_id]
-        con.execute(insert_command, insert_values)
+        # searching for this card_ID in Card_Mechanics table:
+        db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
+                                                               database_parameters['Host_Name'],
+                                                               database_parameters['Database_Name'])
+        engine = create_engine(db_connection_str)
+        df = pd.read_sql_query(r'SELECT 1 FROM Card_Mechanics WHERE Card_ID = "%s"' % card_id, engine)
+        if df.shape[0] == 0:  # This means the Card_ID was not found in Card_Mechanics and it's mechanics should be inserted
+            mechanics_list = card_info['Mechanics']
+            for mechanic in mechanics_list:
+                con.execute('SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = "%s"' % mechanic)
+                mechanics_id = con.fetchall()[0][0]
+                # insert
+                insert_command = '''INSERT INTO Card_Mechanics (
+                   Card_ID, Mechanic_ID) VALUES (%s, %s)'''
+                insert_values = [card_id, mechanics_id]
+                con.execute(insert_command, insert_values)
+                print(f'{card_name}\'s mechanics were inserted into the database') # do we want ot see it?
 
 
 def insert_decks(winner_deck, loser_deck, database_parameters):
