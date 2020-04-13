@@ -54,7 +54,9 @@ SCHEME = 'Database scheme with the following tables will be created:\n'\
     '                      Average_Card_Cost                   Release_Year                                          \n'\
     '                      Most_Common_Set                     Cost                                                 \n'\
     '                      Most_Common_Type                    Artist                                               \n'\
-    '                      Number_of_Unique_Cards              Mana_Cost                                             \n'
+    '                      Number_of_Unique_Cards              Mana_Cost                                             \n'\
+    '                                                          Attack                                                \n'\
+    '                                                          Health                                                \n'
 
 """API"""
 STATUS_CODE_OK = 200
