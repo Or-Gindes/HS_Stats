@@ -12,7 +12,8 @@ from game_parser import game_parser
 from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from urllib3.exceptions import MaxRetryError
 from argparse_cli import parse_args_cli
-from Database import insert_card, insert_decks, insert_matches, create_database, create_tables, card_in_deck_update
+from Database import insert_card, insert_decks, insert_matches, create_database, create_tables, card_in_deck_update, \
+    insert_mechanics, insert_card_mechanics
 from config import SCHEME
 import pymysql
 
@@ -84,6 +85,8 @@ def main():
                 insert_matches(match_url, winner, loser, database_parameters)
                 for card_name, card_info in mined_cards.items():
                     insert_card(card_name, card_info, database_parameters)
+                    insert_mechanics(card_info, database_parameters)
+                    insert_card_mechanics(card_name, card_info, database_parameters)
                 print("\nExtracted all data from match %d\n" % match_num)
                 card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], database_parameters)
     except (WebDriverException, NoSuchWindowException, TypeError) as err:

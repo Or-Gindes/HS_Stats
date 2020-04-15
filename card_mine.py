@@ -41,22 +41,22 @@ def format_card(data):
         return data
 
 
-def card_mine(url, quiet=False):
+def card_mine(url, card_name):
     """
-    :param quiet: when set to True suppress chrome window popup
     :param url: input url to specific card in hs.replay database
+    :param card_name: name of the card mined in game_parser
     :return: mine card data and organise into dictionary
     """
     arguments = parse_args_cli()
+    quiet = arguments[2]
     database_parameters = {'Host_Name': arguments[3], 'Password': arguments[4], 'Database_Name': arguments[5]}
-    card_name = url.rsplit('/', 1)[1].title()
     card = from_database(card_name, database_parameters)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
-        print("Card data for '%s' was pulled from database" % card_name)
+        print('Card data for "%s" was pulled from database' % card_name)
         card_info = {col: card[col][0] for col in card.columns[CARD_RELEVANT_DATA:]}
         card_info['Set'] = card_info['Card_set']
     else:  # Card was not found in the database and will be scraped
-        print("Card data for '%s' is now being webscrapped" % card_name)
+        print('Card data for "%s" is now being webscrapped' % card_name)
         driver = get_driver(url, CARD_URL_PATTERN, quiet)
         # "driver is False" is required because "not driver" can cause unexpected behaviour when get_driver succeeds
         if driver is False:
@@ -73,8 +73,8 @@ def card_mine(url, quiet=False):
 
 def main():
     """test main card_mine function"""
-    card_url = 'https://hsreplay.net/cards/47222/zap'
-    print(card_mine(card_url))
+    card_url = 'https://hsreplay.net/cards/57546/hand-of-adal'
+    print(card_mine(card_url, "Hand of Ada'l"))
 
 
 if __name__ == '__main__':
