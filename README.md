@@ -13,6 +13,7 @@
 * Insights and conclusions
 * Additional Sources of information
 * Appendix
+    * Past updates
     * Current status
     * Technologies
     * Setting up your project folder and environment
@@ -59,20 +60,22 @@ and the data gathered is used to make business and balance decisions on a daily 
 
 ### Where do we go to then ?
 
-We used the website http://hsreplay.net, which records an average of 700,000 matches each day and serves as a
+1. We've used the website http://hsreplay.net, which records an average of 700,000 matches each day and serves as a
 private statistical monitor of the game and holds many kinds of data.
 We've built a web scraper which parses:
+
    1. The live game feed (updated about every second) to get the players' decks and match results.
    2. For each match extracted from the feed, parses the decks to get the card names that it consists of.
    3. For each card in the players' decks, extracts it's characteristics.
 
-* What does the web scraper do in one iteration ?
-    * reads from the live feed once. 
-    * extracts up to 11 matches. 
-    * extracts up to different 660 cards (!)
+    * What does the web scraper do in one iteration ?
+        * reads from the live feed once. 
+        * extracts up to 11 matches. 
+        * extracts up to different 660 cards (!)
     
-    
-All of this scraped data will be used for...
+2. We've used Rapidapi's API to extract additional information about the cards not provided by http://hsreplay.net.
+
+All of this collected data will be used for...
 
 ### Database creation
 
@@ -92,7 +95,7 @@ Take note of the different tables and columns.
 * Inconsistencies in web-page structure in response to connection issues makes debugging difficult 
   (due to difficulties in recreating the bug) and necessitates flexible code
 * Constructing multiple connected functions in an efficient way (no code reuse for example in opening a driver).
-* Nature of the extracted data changes during the project (Ranks)
+* Nature and structure of the extracted data changes during the project (Ranks)
 
 ### Insights and conclusions 
 
@@ -110,6 +113,7 @@ speed and connection conditions (for example when extracting an element that tak
  
 * https://www.itc.tech/web-scraping-with-python-a-to-z/ 
 * https://mothergeo-py.readthedocs.io/en/latest/development/how-to/venv-win.html
+* https://rapidapi.com/omgvamp/api/hearthstone
 * https://selenium-python.readthedocs.io/
 * http://lucidchart.com 
 * Cohort staff and fellows 
@@ -117,9 +121,12 @@ speed and connection conditions (for example when extracting an element that tak
 
 ## Appendix
 
-### Current status
+### Past updates
 * Changing the scripts from using SQLite to MySQL - done. 
 * Getting the MySQL user access details - done.
+
+### Current status
+* Enriching the data using with an external resource - done.
 * Providing useful SQL commands in the appendix - in progress.
 
 ### Technologies 
@@ -161,12 +168,12 @@ deactivate
 ### User manual
 1. This project utilizes a CLI, allowing you to customize the program's behaviour:
     
-    1. <u>Program Behaviour arguments:</u>
+    1. Program Behaviour arguments:
         1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of times.
         2. Second argument is '-n' - type it with a number attached (for example -n5) to run the web-scraper n times (5 in this case).
             * You can't use both the '-i' and '-n' arguments. 
         3. Third argument is '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower).
-    2. <u>Database arguments:</u>
+    2. Database arguments:
         1. Fourth argument is '-l' - the hostname - default is set to 'localhost'.
         2. Fifth argument is '-p' - the password - default is set to 'root'.
         3. Sixth argument is '-d' - the database name - default is set to 'HS_Stats'.

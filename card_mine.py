@@ -11,7 +11,6 @@ from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, CARD_RELEVANT_DATA
 import pandas as pd
 from sqlalchemy import create_engine
 from argparse_cli import parse_args_cli
-import card_api
 
 
 def from_database(card_name, database_parameters):
@@ -53,11 +52,11 @@ def card_mine(url, card_name):
     database_parameters = {'Host_Name': arguments[3], 'Password': arguments[4], 'Database_Name': arguments[5]}
     card = from_database(card_name, database_parameters)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
-        print("Card data for '%s' was pulled from database" % card_name)
+        print('Card data for "%s" was pulled from database' % card_name)
         card_info = {col: card[col][0] for col in card.columns[CARD_RELEVANT_DATA:]}
         card_info['Set'] = card_info['Card_set']
     else:  # Card was not found in the database and will be scraped
-        print("Card data for '%s' is now being webscrapped" % card_name)
+        print('Card data for "%s" is now being webscrapped' % card_name)
         driver = get_driver(url, CARD_URL_PATTERN, quiet)
         # "driver is False" is required because "not driver" can cause unexpected behaviour when get_driver succeeds
         if driver is False:
