@@ -2,11 +2,12 @@
 ITC Data-Mining Project
 By: Or Gindes, Dor Sklar, Mariia Padalko
 
-This function accept argument from user regarding operational parameters
+This function accepts argument from user regarding operational parameters
 """
 
 import argparse
-from config import MIN_NUM_OF_ARG, PASSWORD, HOST_NAME, DB_FILENAME
+import getpass
+from config import MIN_NUM_OF_ARG, HOST_NAME, DB_FILENAME
 
 
 def parse_args_cli():
@@ -37,12 +38,8 @@ def parse_args_cli():
                         help='Use flag to set user\'s host name, defaults to %s '
                              '(default can be changed in config file)' % HOST_NAME)
 
-    parser.add_argument('-p', '--password', type=str, default=PASSWORD, help='Use flag to set password for MySQL '
-                                                                             'server. will use password in config '
-                                                                             'file if non was provided')
-
     parser.add_argument('-d', '--dbname', type=str, default=DB_FILENAME,
-                        help='Ues flag to set name of database to create and/or use, default is "%s" '
+                        help='Use flag to set name of database to create and/or use, default is "%s" '
                              '(default can be changed in config file)' % DB_FILENAME)
 
     parser.add_argument('-o', '--overwrite', action='store_true', default=False, help='By default script will update \
@@ -57,7 +54,9 @@ def parse_args_cli():
         parser.error("Invalid input provided.\
         \nPlease, choose exactly one operation mode: Infinity mode (-i) for indefinite data collection or "
                      "specify desired number of iterations (-n <NUMBER>)")
-    return args
+    PASSWORD = getpass.getpass('Input password for your MySQL server: ')
+    return [args.infinity, args.number_of_iterations, args.quiet,
+            args.localhostname, PASSWORD, args.dbname, args.overwrite]
 
 
 if __name__ == '__main__':
