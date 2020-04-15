@@ -9,137 +9,148 @@ import pymysql
 import pandas as pd
 from game_parser import game_parser
 from feed_parser import feed_parser
-from sqlalchemy import create_engine
-from config import SET_RELEASE_DICT
+from config import SET_RELEASE_DICT, USER, PASSWORD, HOST_NAME, DB_FILENAME
 from datetime import date
+from sqlalchemy import create_engine
 
 
-def insert_matches(match_url, winner, loser, database_parameters):
+def insert_matches(match_url, winner, loser, con):
     """
     This function writes results of matches into matches table
+    :param match_url: url of the game
+    :param winner: name and rank of winning deck
+    :param loser: name and rank of losing deck
+    :param con: connection object to mysql database
     """
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                         db=database_parameters['Database_Name']) as con:
-        con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
-        deck_id = con.fetchall()[0][0]
-        winner_rank = winner[1]
-        looser_rank = loser[1]
-        insert_command = '''INSERT INTO Matches (
+    con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
+    deck_id = con.fetchall()[0][0]
+    winner_rank = winner[1]
+    looser_rank = loser[1]
+    insert_command = '''INSERT INTO Matches (
         Match_URL, Winner_Deck_ID, Looser_Deck_ID, Winner_Player_Rank, Looser_Player_Rank) VALUES (%s, %s, %s, %s, %s)'''
-        insert_values = [match_url, deck_id, deck_id - 1, winner_rank, looser_rank]
-        con.execute(insert_command, insert_values)
+    insert_values = [match_url, deck_id, deck_id - 1, winner_rank, looser_rank]
+    con.execute(insert_command, insert_values)
 
 
-def insert_card(name, card_dict, database_parameters):
-    """This function gets the card's name and details and inserts it into the cards database,
-    unless it's there already"""
-    db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
-                                                           database_parameters['Host_Name'],
-                                                           database_parameters['Database_Name'])
-    engine = create_engine(db_connection_str)
-    df = pd.read_sql_query(r'SELECT 1 FROM Cards WHERE Card_Name = "%s"' % name, engine)
+def insert_card(name, card_dict, con, engine):
+    """
+    This function gets the card's name and details and inserts it into the cards database,
+    unless it's there already
+    :param name: name of the card
+    :param card_dict: card info in dictionary format
+    :param con: connection object to mysql database
+    :param engine: pymysql connection object
+    """
+    df = pd.read_sql_query(f'SELECT 1 FROM Cards WHERE Card_Name = "{name}"', engine)
     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
-        with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                             db=database_parameters['Database_Name']) as con:
-            insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
+        insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
                                 Artist, Mana_Cost, Attack, Health) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-            try:
-                card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
-            except KeyError:
-                # if a new set was released and isn't found in the dictionary the current year will be taken
-                card_dict['Release Year'] = date.today().year
-            insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
-                             card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
-                             card_dict['Attack'], card_dict['Health']]
-            con.execute(insert_command, insert_values)
-            print("%s was put into the database" % name)
+        try:
+            card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
+        except KeyError:
+            # if a new set was released and isn't found in the dictionary the current year will be taken
+            card_dict['Release Year'] = date.today().year
+        insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
+                         card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
+                         card_dict['Attack'], card_dict['Health']]
+        con.execute(insert_command, insert_values)
+        print(f"{name} was put into the database")
 
 
-def insert_mechanics(card_info, database_parameters):
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                         db=database_parameters['Database_Name']) as con:
+def insert_mechanics(card_info, con, engine):
+    """
+    Insert into mechanics table any new mechanics found on cards
+    :param card_info: card info in dictionary format
+    :param con: connection object to mysql database
+    :param engine: pymysql connection object
+    """
+    mechanics_list = card_info['Mechanics']
+    insert_command = '''INSERT INTO Mechanics (Mechanic_Name) VALUES (%s)'''
+    for mechanic in mechanics_list:
+        df = pd.read_sql_query(f'SELECT 1 FROM Mechanics WHERE Mechanic_Name = "{mechanic}"', engine)
+        if df.shape[0] == 0:  # This means that this mechanic was not found in Mechanics and should be inserted
+            con.execute(insert_command, mechanic)
+
+
+def insert_card_mechanics(card_name, card_info, con, engine):
+    """
+    insert into the connection table rows which connect between card_id and mechanic_id
+    :param card_name: name of the card
+    :param card_info: card info in dictionary format
+    :param con: connection object to mysql database
+    :param engine: pymysql connection object
+    """
+    con.execute(f'SELECT Card_ID, Card_Name FROM Cards WHERE Card_Name = "{card_name}"')
+    card_id = con.fetchall()[0][0]
+    # searching for this card_ID in Card_Mechanics table:
+    df = pd.read_sql_query(f'SELECT 1 FROM Card_Mechanics WHERE Card_ID = "{card_id}"', engine)
+    if df.shape[0] == 0:  # This means the Card_ID was not found in Card_Mechanics and it's mechanics should be inserted
         mechanics_list = card_info['Mechanics']
-        insert_command = '''INSERT INTO Mechanics (
-                   Mechanic_Name) VALUES (%s)'''
-        db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
-                                                               database_parameters['Host_Name'],
-                                                               database_parameters['Database_Name'])
-        engine = create_engine(db_connection_str)
         for mechanic in mechanics_list:
-            df = pd.read_sql_query(r'SELECT 1 FROM Mechanics WHERE Mechanic_Name = "%s"' % mechanic, engine)
-            if df.shape[0] == 0:  # This means that this mechanic was not found in Mechanics and should be inserted
-                con.execute(insert_command, mechanic)
-                print(f'Mechanic {mechanic} was inserted into the database')  # do we want to see it?
+            con.execute(f'SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = "{mechanic}"')
+            mechanics_id = con.fetchall()[0][0]
+            insert_command = 'INSERT INTO Card_Mechanics (Card_ID, Mechanic_ID) VALUES (%s, %s)'
+            insert_values = [card_id, mechanics_id]
+            con.execute(insert_command, insert_values)
 
 
-def insert_card_mechanics(card_name, card_info, database_parameters):
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                         db=database_parameters['Database_Name']) as con:
-        con.execute('SELECT Card_ID, Card_Name FROM Cards WHERE Card_Name = "%s"' % card_name)
-        card_id = con.fetchall()[0][0]
-        # searching for this card_ID in Card_Mechanics table:
-        db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
-                                                               database_parameters['Host_Name'],
-                                                               database_parameters['Database_Name'])
-        engine = create_engine(db_connection_str)
-        df = pd.read_sql_query(r'SELECT 1 FROM Card_Mechanics WHERE Card_ID = "%s"' % card_id, engine)
-        if df.shape[
-            0] == 0:  # This means the Card_ID was not found in Card_Mechanics and it's mechanics should be inserted
-            mechanics_list = card_info['Mechanics']
-            for mechanic in mechanics_list:
-                con.execute('SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = "%s"' % mechanic)
-                mechanics_id = con.fetchall()[0][0]
-                # insert
-                insert_command = '''INSERT INTO Card_Mechanics (
-                   Card_ID, Mechanic_ID) VALUES (%s, %s)'''
-                insert_values = [card_id, mechanics_id]
-                con.execute(insert_command, insert_values)
-                print(f'{card_name}\'s mechanics were inserted into the database')  # do we want ot see it?
-
-
-def insert_decks(winner_deck, loser_deck, database_parameters):
-    """Given a winning and losing deck from a match - insert into Decks table in the database"""
+def insert_decks(winner_deck, loser_deck, con):
+    """
+    Given a winning and losing deck from a match - insert into Decks table in the database
+    :param winner_deck: name of the winning deck in a match
+    :param loser_deck: name of the losing deck in a match
+    :param con: connection object to mysql database
+    """
     decks = [loser_deck, winner_deck]
     insert_command = '''INSERT INTO Decks (Deck_Name, Winner, Deck_Prefix, Class, Deck_Cost, 
             Average_Card_Cost, Most_Common_Set, Most_Common_Type, Number_of_Unique_Cards) 
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                         db=database_parameters['Database_Name']) as con:
-        for win, deck in enumerate(decks):
-            # Insert winner and loser deck into the database / for loser win = 0 and for winner win = 1
-            name = ' '.join([deck['Deck'], deck['Class']])
-            insert_values = [name, bool(win), deck['Deck'], deck['Class'], deck['Deck Cost'], deck['Average Card Cost'],
-                             deck['Most_Common_Set'], deck['Most_Common_Type'], len(deck['Cards'])]
+    for win, deck in enumerate(decks):
+        # Insert winner and loser deck into the database / for loser win = 0 and for winner win = 1
+        name = ' '.join([deck['Deck'], deck['Class']])
+        insert_values = [name, bool(win), deck['Deck'], deck['Class'], deck['Deck Cost'], deck['Average Card Cost'],
+                         deck['Most_Common_Set'], deck['Most_Common_Type'], len(deck['Cards'])]
+        con.execute(insert_command, insert_values)
+
+
+def card_in_deck_update(winner_cards, loser_cards, con):
+    """
+    Given cards from winning and losing deck in a match - insert into card_in_deck table in the database
+    :param winner_cards: a dictionary of card found in the winning deck and occurrences
+    :param loser_cards: a dictionary of card found in the losing deck and occurrences
+    :param con: connection object to mysql database
+    """
+    decks = [winner_cards, loser_cards]
+    insert_command = 'INSERT INTO Card_In_Deck (Deck_ID, Card_ID, Number_of_Copies) VALUES (%s, %s, %s)'
+    con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
+    result = con.fetchall()[0][0]
+    for index, deck in enumerate(decks):
+        # for win/lose pair loser is inserted into decks first to decks so here winner cards gets deck_id for
+        # latest insert in decks and loser cards get deck_id for deck above that which is the loser of the pair
+        deck_id = result - index
+        for card, duplicates in deck.items():
+            con.execute(f'SELECT Card_ID FROM Cards WHERE Card_Name = "{card}"')
+            card_id = con.fetchall()[0][0]
+            insert_values = [deck_id, card_id, duplicates]
             con.execute(insert_command, insert_values)
 
 
-def card_in_deck_update(winner_cards, loser_cards, database_parameters):
-    """Given cards from winning and losing deck in a match - insert into card_in_deck table in the database"""
-    decks = [winner_cards, loser_cards]
-    insert_command = 'INSERT INTO Card_In_Deck (Deck_ID, Card_ID, Number_of_Copies) VALUES (%s, %s, %s)'
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                         db=database_parameters['Database_Name']) as con:
-        con.execute('SELECT MAX(Deck_ID) FROM Decks')  # find max deck_id (latest input)
-        result = con.fetchall()[0][0]
-        for index, deck in enumerate(decks):
-            # for win/lose pair loser is inserted into decks first to decks so here winner cards gets deck_id for
-            # latest insert in decks and loser cards get deck_id for deck above that which is the loser of the pair
-            deck_id = result - index
-            for card, duplicates in deck.items():
-                con.execute('SELECT Card_ID FROM Cards WHERE Card_Name = "%s"' % card)
-                card_id = con.fetchall()[0][0]
-                insert_values = [deck_id, card_id, duplicates]
-                con.execute(insert_command, insert_values)
+def create_database(con, database_name):
+    """
+    Create a database with the given name including tables
+    :param con: connection object to mysql database
+    :param database_name: requested name for database
+    """
+    con.execute(f"CREATE DATABASE {database_name}")
+    create_tables(con, database_name)
 
 
-def create_database(database_parameters):
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root',
-                         passwd=database_parameters['Password']) as con:
-        con.execute("CREATE DATABASE %s" % database_parameters['Database_Name'])
-
-
-def create_tables(database_parameters):
-    """Create tables in HS_stats Database"""
+def create_tables(con, database_name):
+    """
+    Create tables in HS_stats Database
+    :param database_name: requested name for database:
+    :param con: connection object to mysql database
+    """
     create_table_decks = '''CREATE TABLE Decks (
         Deck_ID INT AUTO_INCREMENT,
         Deck_Name VARCHAR(100),
@@ -195,24 +206,18 @@ def create_tables(database_parameters):
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
         FOREIGN KEY(Mechanic_ID) REFERENCES Mechanics(Mechanics_ID),
         PRIMARY KEY (Card_Mechanics_ID))'''
-    table_commands = [create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck,
+    use_command = f"USE {database_name}"
+    table_commands = [use_command, create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck,
                       create_table_mechanics, create_table_card_mechanics]
-    with pymysql.connect(host=database_parameters['Host_Name'], user='root', passwd=database_parameters['Password'],
-                         db=database_parameters['Database_Name']) as con:
-        for command in table_commands:
-            con.execute(command)
+    for command in table_commands:
+        con.execute(command)
 
 
 def main():
     """Function used to test the decks_table creation and handling functions"""
-    database_parameters = {'Host_Name': 'localhost', 'Password': 'YourPasswrd', 'Database_Name': 'HS_Stats'}
-    # Use to reset database as needed
-    # try:
-    #     with pymysql.connect(host='localhost', user='root', passwd=PASSWORD) as con:
-    #         con.execute("DROP DATABASE %s" % DB_FILENAME)
-    #         print("database found and deleted")
-    # create_database(database_parameters)  # will throw an error if already exists
-    # create_tables(database_parameters)  # will throw an error if already exists
+    with pymysql.connect(host='localhost', user=USER, passwd=PASSWORD, db=DB_FILENAME) as con:
+        db_connection_str = f'mysql+pymysql://{USER}:{PASSWORD}@{HOST_NAME}/{DB_FILENAME}'
+        engine = create_engine(db_connection_str)
     feed_results = feed_parser()
     for iterations, match in enumerate(feed_results):
         match_url, winner, loser = match[0], match[1], match[2]
@@ -222,13 +227,13 @@ def main():
                                                                                            winner_rank, loser[0],
                                                                                            looser_rank))
         winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, False)
-        insert_decks(winner_deck, loser_deck, database_parameters)
-        insert_matches(match_url, winner, loser, database_parameters)
+        insert_decks(winner_deck, loser_deck, con)
+        insert_matches(match_url, winner, loser, con)
         for card_name, card_info in mined_cards.items():
-            insert_card(card_name, card_info, database_parameters)
-            insert_mechanics(card_info, database_parameters)
-            insert_card_mechanics(card_name, card_info, database_parameters)
-        card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], database_parameters)
+            insert_card(card_name, card_info, con, engine)
+            insert_mechanics(card_info, con, engine)
+            insert_card_mechanics(card_name, card_info, con, engine)
+        card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], con)
         if iterations == 1:
             break
 

@@ -22,6 +22,6 @@ def test_connection(driver):
             driver.find_element_by_xpath(NO_INTERNET_PATTERN)
             sleep(WAIT)  # if no internet - wait WAIT seconds and attempt again
             if attempt > N_ATTEMPTS:
-                return False
+                raise ConnectionError("Could not establish internet connection")
         except NoSuchElementException:
             return True

@@ -7,18 +7,23 @@ This function parses the data of a single card from the cards Hsreplay page
 
 from get_driver import get_driver
 from time import sleep
-from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, CARD_RELEVANT_DATA
+from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, CARD_RELEVANT_DATA, USER, COST, COST_ALT, LATEST_SET, \
+    LATEST_SET_ALT, SET, SET_DB
 import pandas as pd
 from sqlalchemy import create_engine
 from argparse_cli import parse_args_cli
 
 
-def from_database(card_name, database_parameters):
-    db_connection_str = 'mysql+pymysql://root:%s@%s/%s' % (database_parameters['Password'],
-                                                           database_parameters['Host_Name'],
-                                                           database_parameters['Database_Name'])
+def from_database(card_name, db_params):
+    """
+    :param card_name: name of card requested
+    :param db_params: database parameters for connection
+    :return: card data from database
+    """
+    db_connection_str = f'mysql+pymysql://{USER}:{db_params.password}@{db_params.localhostname}/{db_params.dbname}'
     engine = create_engine(db_connection_str)
-    card = pd.read_sql_query(r'SELECT * FROM Cards WHERE Card_Name = "%s"' % card_name, engine)
+    sql_query = f'SELECT * FROM Cards WHERE Card_Name = "{card_name}"'
+    card = pd.read_sql_query(sql_query, engine)
     return card
 
 
@@ -29,14 +34,14 @@ def format_card(data):
         print("Failed to get card data, attempting again")
         return False
     data = {data[i]: data[i + 1] for i in range(0, len(data), 2)}
-    if data['Set'] == 'GLOBAL_CARD_SET_BLACK_TEMPLE':  # this is some bad data that sometimes pops up
-        data['Set'] = 'Ashes of Outland'
+    if data[SET] == LATEST_SET_ALT:  # this is some bad data that sometimes pops up
+        data[SET] = LATEST_SET
     try:
-        data['Cost'] = int(data['Cost'].split()[0])
+        data[COST] = int(data[COST].split()[0])
     except ValueError:
-        data['Cost'] = 0
+        data[COST] = 0
     except KeyError:
-        data['Cost'] = int(data['GLOBAL_COST'].split()[0])
+        data[COST] = int(data[COST_ALT].split()[0])
     finally:
         return data
 
@@ -47,22 +52,15 @@ def card_mine(url, card_name):
     :param card_name: name of the card mined in game_parser
     :return: mine card data and organise into dictionary
     """
-    arguments = parse_args_cli()
-    quiet = arguments[2]
-    database_parameters = {'Host_Name': arguments[3], 'Password': arguments[4], 'Database_Name': arguments[5]}
-    card = from_database(card_name, database_parameters)  # Check if card is already found in database
+    args = parse_args_cli()
+    card = from_database(card_name, args)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
-        print('Card data for "%s" was pulled from database' % card_name)
+        print(f'Card data for "{card_name}" was pulled from database')
         card_info = {col: card[col][0] for col in card.columns[CARD_RELEVANT_DATA:]}
-        card_info['Set'] = card_info['Card_set']
+        card_info[SET] = card_info[SET_DB]
     else:  # Card was not found in the database and will be scraped
-        print('Card data for "%s" is now being webscrapped' % card_name)
-        driver = get_driver(url, CARD_URL_PATTERN, quiet)
-        # "driver is False" is required because "not driver" can cause unexpected behaviour when get_driver succeeds
-        if driver is False:
-            # right now function is set to return {} and not exit() so as to not disrupt main scraping function
-            print("Failed to get data on card")
-            return {}
+        print(f'Card data for "{card_name}" is now being webscrapped')
+        driver = get_driver(url, CARD_URL_PATTERN, args.quiet)
         card_info = False
         while card_info is False:
             sleep(WAIT)

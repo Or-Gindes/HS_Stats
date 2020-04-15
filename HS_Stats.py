@@ -12,68 +12,61 @@ from game_parser import game_parser
 from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from urllib3.exceptions import MaxRetryError
 from argparse_cli import parse_args_cli
-from Database import insert_card, insert_decks, insert_matches, create_database, create_tables, card_in_deck_update, \
+from Database import insert_card, insert_decks, insert_matches, create_database, card_in_deck_update, \
     insert_mechanics, insert_card_mechanics
-from config import SCHEME
+from config import SCHEME, CARDS, USER
 import pymysql
+from sqlalchemy import create_engine
 
 
-def initialize_db(database_parameters, overwrite):
+def initialize_db(db_params):
+    """
+    :param db_params: holds information to connect to users MySQL Database
+    """
     try:  # try connecting using given database_parameters
-        with pymysql.connect(host=database_parameters['Host_Name'], user='root',
-                             passwd=database_parameters['Password']) as con:
-            if overwrite:  # if overwrite - try to drop database
-                con.execute("DROP DATABASE %s" % database_parameters['Database_Name'])
+        with pymysql.connect(host=db_params.localhostname, user=USER, passwd=db_params.password) as con:
+            if db_params.overwrite:  # if overwrite - try to drop database
+                con.execute(f"DROP DATABASE {db_params.dbname}")
                 print("Old database found and deleted\n")
+            create_database(con, db_params.dbname)
+            print(SCHEME)
+            print(f"Database '{db_params.dbname}' was created\n")
     except pymysql.err.InternalError:
         print("Can't overwrite specified database because it doesn't exist.")
         exit()
     except pymysql.err.OperationalError:
-        print("Error - Could not execute MySQL with the specified access details, please check them again.")
+        print("Error - Could not connect to database with the specified access details, please check them again.")
         exit()
-    else:
-        try:  # Try to create database, if it was dropped or did not exists it will be created otherwise except
-            create_database(database_parameters)
-            create_tables(database_parameters)
-            print(SCHEME)
-            print("Database '%s' was created\n" % database_parameters['Database_Name'])
-        except pymysql.err.ProgrammingError:    # Database was found and will be used
-            print("Database named '%s' was found and will be used (was not overwritten)\n" %
-                  database_parameters['Database_Name'])
+    except pymysql.err.ProgrammingError:  # Database was found and will be used
+        print(f"Database named '{db_params.dbname}' was found and will be used (was not "
+              f"overwritten)\n")
 
 
 def main():
     """This function can be set to gather HearthStone data indefinitely (until key prompt)
      or for a set number of iterations"""
-    arguments = parse_args_cli()
-    # infinite - Set to True for indefinite value collection
-    infinite = arguments[0]
-    # number_of_iterations - Only relevant when INFINITE is set to False - determine number of scraping iterations
-    number_of_iterations = arguments[1]
-    # quiet - if not provided defaults to False. When set to True - suppress driver window popup
-    quiet = arguments[2]
-    # database_parameters holds information to connect to users MySQL Database
-    database_parameters = {'Host_Name': arguments[3], 'Password': arguments[4], 'Database_Name': arguments[5]}
-    # When set to True and a database with dbname is found the database will be reset
-    overwrite = arguments[6]
-    initialize_db(database_parameters, overwrite)
-    i = 0
-    if infinite:
+    args = parse_args_cli()
+    initialize_db(args)
+    iteration = 0
+    if args.infinity:
         print("Warning! Hs_stats has been run with the infinite parameter and will collect data until interrupted "
               "by key prompt (CTRL + C) or close the driver window\n")
+    else:
+        print(f"The script will now run for {args.number_of_iterations} iterations\n")
     try:
-        while (i < number_of_iterations) or infinite:
-            i += 1
+        while (iteration < args.number_of_iterations) or args.infinity:
+            iteration += 1
+            print(f"Iteration {iteration} of {args.number_of_iterations}")
             print("Now scrapping matches from HsReplay live feed:\n")
-            matches = feed_parser(quiet)
-            print("Found %d matches to parse" % (len(matches)))
+            matches = feed_parser(args.quiet)
+            print(f"Found {len(matches)} matches to parse")
             print("---------------------------------------\n")
             for match_num, match in enumerate(matches, start=1):
                 match_url, winner, loser = match[0], match[1], match[2]
-                print("Now parsing match %d of %d" % (match_num, len(matches)))
-                print("Match URL address is: %s" % match_url)
-                print(winner[0] + " VS. " + loser[0] + "\n")
-                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, quiet)
+                print(f"Now parsing match {match_num} of {len(matches)}")
+                print(f"Match URL address is: {match_url}")
+                print(f"{winner[0]} VS. {loser[0]} \n")
+                winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, args.quiet)
                 print("\nDatabase updates:")
                 print("---------------------------------------\n")
                 print("Database is updated with the Winning Deck of the match:")
@@ -81,19 +74,22 @@ def main():
                 print("\nDatabase is updated with the Losing Deck of the match:")
                 print(loser_deck)
                 print("\n")
-                insert_decks(winner_deck, loser_deck, database_parameters)
-                insert_matches(match_url, winner, loser, database_parameters)
-                for card_name, card_info in mined_cards.items():
-                    insert_card(card_name, card_info, database_parameters)
-                    insert_mechanics(card_info, database_parameters)
-                    insert_card_mechanics(card_name, card_info, database_parameters)
-                print("\nExtracted all data from match %d\n" % match_num)
-                card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], database_parameters)
+                with pymysql.connect(host=args.localhostname, user=USER, passwd=args.password, db=args.dbname) as con:
+                    db_connection_str = f'mysql+pymysql://{USER}:{args.password}@{args.localhostname}/{args.dbname}'
+                    engine = create_engine(db_connection_str)
+                    insert_decks(winner_deck, loser_deck, con)
+                    insert_matches(match_url, winner, loser, con)
+                    for card_name, card_info in mined_cards.items():
+                        insert_card(card_name, card_info, con, engine)
+                        insert_mechanics(card_info, con, engine)
+                        insert_card_mechanics(card_name, card_info, con, engine)
+                    print(f"\nExtracted all data from match {match_num}\n")
+                    card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
     except (WebDriverException, NoSuchWindowException, TypeError) as err:
         print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
               "for this error is you might have closed the driver window\nIf that is the case please consider "
               "running the program in quite mode (-q) to suppress driver window pop-up\n")
-        print("More information on error: " + err.args[0])
+        print(f"More information on error: {err.args[0]}")
         exit()
     except (KeyboardInterrupt, MaxRetryError):
         print("Thank you for using Hs Stats - HearthStone matches webscrapper")

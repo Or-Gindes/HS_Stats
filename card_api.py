@@ -1,17 +1,27 @@
 import requests
 import json
-from config import STATUS_CODE_OK, INDENT, API_BASE_URL, HEADERS, QUERYSTRING
+from config import STATUS_CODE_OK, INDENT, API_BASE_URL, HEADERS, QUERYSTRING, SPACE, COMMA, DOTS, SEP
 
 
 def format_response(response):
+    """
+    format a raw response from API
+    :param response: response object from requests
+    :return: dictionary of card info
+    """
     response = response.json()
     response = json.loads(json.dumps(response, indent=INDENT))
     return response[-1]
 
 
 def card_api(name):
+    """
+    webscrap missing card data using an API
+    :param name: Card name
+    :return: Missing card information in dictionary format
+    """
     status_code = 0
-    name = name.replace(" ", "%2520").replace("'", "%27").replace(":", "%253A").replace(",", "%252C")
+    name = name.replace(" ", SPACE).replace("'", COMMA).replace(":", DOTS).replace(",", SEP)
     while status_code != STATUS_CODE_OK:
         response = requests.request("GET", API_BASE_URL + name, headers=HEADERS, params=QUERYSTRING)
         status_code = response.status_code

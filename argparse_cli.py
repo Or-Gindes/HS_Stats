@@ -57,8 +57,7 @@ def parse_args_cli():
         parser.error("Invalid input provided.\
         \nPlease, choose exactly one operation mode: Infinity mode (-i) for indefinite data collection or "
                      "specify desired number of iterations (-n <NUMBER>)")
-    return [args.infinity, args.number_of_iterations, args.quiet,
-            args.localhostname, args.password, args.dbname, args.overwrite]
+    return args
 
 
 if __name__ == '__main__':

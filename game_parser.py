@@ -42,6 +42,7 @@ def format_deck(win_or_lose_deck, collected_deck):
     """Format a given deck into a dictionary
      :param collected_deck: the deck built in get_decks function
      :param win_or_lose_deck: the name of the deck passed from feed_parser
+     :returns a formatted dictionary containing card data
     """
     if 'Demon' in win_or_lose_deck[0]:  # Only one class has two words in the name
         name, class_name = win_or_lose_deck[0].rsplit(' ', 2)[0], 'Demon Hunter'
@@ -76,7 +77,6 @@ def get_decks(driver, winner_deck, loser_deck):
             card_name, card_dict, card_cost, count = get_card(link, deck, mined_cards)
             if card_name not in deck['Cards']:
                 card_dict['Mana Cost'] = card_cost
-                # print(card_name, card_dict, count)    # for debugging
                 mined_cards[card_name] = card_dict  # collect cards which were not already found in the database
             sets.append(card_dict['Set'])
             types.append(card_dict['Type'])
@@ -99,7 +99,7 @@ def get_decks(driver, winner_deck, loser_deck):
         return winning_deck, losing_deck, mined_cards
     except NameError:
         print("Bad input provided from feed parser")
-        return {}, {}, mined_cards
+        exit()
 
 
 def game_parser(url, winner_deck, loser_deck, quiet=False):
@@ -113,16 +113,16 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     if quiet:
         print("Please wait while the game is being loaded...")
     driver = get_driver(url, MATCH_URL_PATTERN, quiet)
-    if driver is False:
-        # right now function is set to return False and not exit() so as to not disrupt main scraping function
-        return False
     mined_cards = False
     while mined_cards is False:
         sleep(WAIT)  # Sleep is not required but useful when internet is unstable
         try:
             winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
         except TypeError:
-            mined_cards = {}
+            print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
+                  "for this error is you might have closed the driver window\nIf that is the case please consider "
+                  "running the program in quite mode (-q) to suppress driver window pop-up\n")
+            exit()
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 
@@ -130,11 +130,12 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
 def main():
     """Function used to test game_parser function"""
     game_url = 'https://hsreplay.net/replay/sS46KjLBpoouj9RxbQGqGR'
-    winner_deck, loser_deck = game_parser(game_url, ('Mech Hunter', '1'), ('Galakrond Rogue', 'Legend 1000'))
+    winner_deck, loser_deck, mined_cards = game_parser(game_url, ('Mech Hunter', '1'), ('Galakrond Rogue', 'Legend 1000'))
     print("The Winning Deck of the match is:")
     print(winner_deck)
     print("The Losing Deck of the match is:")
     print(loser_deck)
+    print(mined_cards)
 
 
 if __name__ == '__main__':
