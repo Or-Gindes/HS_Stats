@@ -4,7 +4,6 @@ By: Or Gindes, Dor Sklar, Mariia Padalko
 
 This is a general settings file to define constants
 """
-
 """Internet related Constants"""
 WAIT = 5  # How long to wait between connection attempts
 N_ATTEMPTS = 10  # How many connection attempts will the function make
@@ -38,15 +37,14 @@ MIN_NUM_OF_ARG = 1
 
 """Database"""
 DB_FILENAME = 'HS_Stats'
-PASSWORD = 'root'
 HOST_NAME = 'localhost'
 CARD_RELEVANT_DATA = 2
 SCHEME = 'Database scheme with the following tables will be created:\n'\
-    '_________________     _______________   _____________     ___________      ____________           _____________\n'\
-    'Matches               Decks             Card_in_Deck      Cards            Card_Mechanics         Mechanics    \n'\
-    '_________________     _______________   _____________     ____________     __________________     _____________\n' \
-    'Match_ID (PK)      ---Deck_ID (PK)---_  ID (PK)         --Card_ID(PK)----  Card_Mechanics_ID(PK) --Mechanic_ID  \n' \
-    'Match_URL          || Deck_Name       L-Deck_ID (FK)   |  Card_name      L-Card_ID (FK)          | Mechanic_Name\n' \
+    '_________________     _______________   _____________     ___________      _________________       ____________\n'\
+    'Matches               Decks             Card_in_Deck      Cards            Card_Mechanics          Mechanics    \n'\
+    '_________________     _______________   _____________     ____________     __________________      ____________\n'\
+    'Match_ID (PK)      ---Deck_ID (PK)---_  ID (PK)         --Card_ID(PK)----  Card_Mechanics_ID(PK) --Mechanic_ID(PK)\n'\
+    'Match_URL          || Deck_Name       L-Deck_ID (FK)   |  Card_name      L-Card_ID (FK)          | Mechanic_Name\n'\
     'Winner_Deck_ID (FK)-| Winner            Card_ID (FK) ---  Class            Mechanic_ID (FK)-------             \n'\
     'Loser_Deck_ID (FK)_/  Deck_Prefix       Number_of_Copies  Type                                                 \n'\
     'Winner_Player_Rank    Class                               Rarity                                               \n'\
