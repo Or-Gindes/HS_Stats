@@ -7,7 +7,7 @@ This is a general settings file to define constants
 
 """Internet related Constants"""
 WAIT = 5  # How long to wait between connection attempts
-N_ATTEMPTS = 10  # How many connection attempts will the function make
+N_ATTEMPTS = 5  # How many connection attempts will the function make
 NO_INTERNET_PATTERN = '//span[@jsselect="heading" and @jsvalues=".innerHTML:msg"]'
 DRIVER_LINUX = 'chromedriver'
 DRIVER_WINDOWS = 'chromedriver.exe'
@@ -48,7 +48,6 @@ MIN_NUM_OF_ARG = 1
 """Database"""
 DB_FILENAME = 'HS_Stats'
 USER = 'root'
-#PASSWORD = 'root'
 HOST_NAME = 'localhost'
 CARD_RELEVANT_DATA = 2
 SCHEME = 'Database scheme with the following tables will be created:\n' \
@@ -79,10 +78,7 @@ SEP = "%252C"
 
 HEADERS = {
     'x-rapidapi-host': "omgvamp-hearthstone-v1.p.rapidapi.com",
-    'x-rapidapi-key': "effab6f2dbmsh791ad27a10929b1p1b1066jsn41b50b0da5b1"
-    # TODO: This needs to replaced with key provided by user
-}  # TODO: let's create some account for a user
+    'x-rapidapi-key': "PLACE YOUR API KEY HERE"
+}
 
 QUERYSTRING = {"collectible": "1"}
-
-# "effab6f2dbmsh791ad27a10929b1p1b1066jsn41b50b0da5b1" - Mariia's api-key
