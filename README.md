@@ -134,15 +134,22 @@ speed and connection conditions (for example when extracting an element that tak
 * MySQL
 
 ### Setting up your project folder and environment
-1. Make sure you have the following installed: 
+1. You will need to have the following: 
     * Python 3 [(see here)](https://www.python.org/downloads/)
     * MySQL [(see here)](https://dev.mysql.com/downloads/installer/)
         * save your root user and password details, the program will need these in order to construct and modify the database.
     * Google Chrome [(see here)](https://www.google.com/chrome/)
-    * After installing Google Chrome, install chromedriver.exe
+    * After installing Google Chrome, install chromedriver.exe:
         * Firstly, check your Google Chrome version [here](https://www.whatismybrowser.com/detect/what-version-of-chrome-do-i-have) 
         * Then, download the appropriate chromedriver.exe according to your version [here](https://chromedriver.chromium.org/)
-
+    * API related setup: 
+        * Please register [here](https://rapidapi.com/omgvamp/api/hearthstone) (you can use your Facebook or GitHub account for your convenience).
+        * After registering your API key should appear (see screenshot), copy it.
+        ![image info](api1.png)
+        * In the config.py file (The configuration file of the project) under the API section, you'll see a variable named HEADERS.
+        * In the highlighted line, replace the <INSET API KEY HERE> expression with the copied API key (quotation marks must stay).
+        ![image info](api2.png)
+        
 2. Create a directory for the project. 
    * Make sure that the python script (.py) files and the requirements.txt files are in the directory.
 

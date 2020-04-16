@@ -9,6 +9,7 @@ It parses the live feed of http://hsreplay.net and returns a list of tuples wher
 represents a match, its participants and whoever won. 
 """
 
+import sys
 from get_driver import get_driver
 from config import FEED_URL_PATTERN, PARSING_INDEX
 
@@ -66,6 +67,9 @@ def feed_parser(quiet=False):
 
     # Opening the browser
     driver = get_driver('https://hsreplay.net/', FEED_URL_PATTERN, quiet)
+    if not driver:
+        print("Error ! There seems to be an internet connection related problem.")
+        sys.exit()
 
     # Finding all of the needed elements in the page.
     link_elements = driver.find_elements_by_xpath("//a[@class='replay-feed-item']")
