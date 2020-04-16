@@ -13,23 +13,22 @@ def parse_args_cli():
     """
     Parsing args from cli input
     :returns
-    infinity parameter - boolean, when set to True ill collect data until interrupt
+    number of readings parameter - positive int, when not run in infinity mode, determine number of iterations
     quiet parameter - boolean, when set to True will suppress driver window popup
-    number of readings parameter - int, when not run in infinity mode, determine number of iterations
     hostname - user's host name, defaults to 'localhost'
     password - user's password to MySQL server
     dbname - name of database, default is 'hs_stats'
     overwrite option - boolean, when set to True will overwrite existing database
+    infinity - will be set to True, is number of iterations is not given
     """
 
     parser = argparse.ArgumentParser(description='Parse parameters for web scraping and creating DB')
 
     # Run arguments
-    parser.add_argument('-i', '--infinity', action='store_true', default=False, help='Use flag for indefinite '
-                                                                                     'match collection')
-    parser.add_argument('-n', '--number_of_iterations', type=int, default=0, help='When not run with the infinity '
-                                                                                  'parameter - determine number of '
-                                                                                  'scraping iterations')
+    parser.add_argument('-n', '--number_of_iterations', type=int, default=0, help='Determines the number of '
+                                                                                  'scraping iterations. If not given, '
+                                                                                  'the parser will iterate infinite'
+                                                                                  'number of times')
     parser.add_argument('-q', '--quiet', action='store_true', default=False, help='Quiet mode. Use flag to \
                                                                                   suppress driver window popup')
     # MySQL and DB arguments
@@ -46,22 +45,13 @@ def parse_args_cli():
                                                                             the given database if it already exists. \
                                                                             Use this flag to overwrite it instead')
     args = parser.parse_args()
-
-    if not bool(args.number_of_iterations):
-        args.infinity = True
-
-    if args.infinity == bool(args.number_of_iterations):
-        parser.error("Invalid input provided.\
-        \nPlease, choose exactly one operation mode: Infinity mode (-i) for indefinite data collection or "
-                     "specify desired number of iterations (-n <NUMBER>)")
+    infinity = not bool(args.number_of_iterations)
 
     if not args.password:
         parser.error('Invalid input.\nPlease, provide password for MySQL')
-    print(f'The program will iterate {args.number_of_iterations} times' * int(args.number_of_iterations > 0), end='')
-    print(f'Since you provided not proper number {args.number_of_iterations}, the program will not run' \
-          * int(args.number_of_iterations <= 0) * (1 - int(args.infinity)))
-    return args
+    return args, infinity
 
 
 if __name__ == '__main__':
     parse_args_cli()
+

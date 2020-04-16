@@ -45,19 +45,19 @@ def initialize_db(db_params):
 def main():
     """This function can be set to gather HearthStone data indefinitely (until key prompt)
      or for a set number of iterations"""
-    args = parse_args_cli()
+    args, infinity = parse_args_cli()
     initialize_db(args)
     iteration = 0
-    if args.infinity:
+    if infinity:
         print("Warning! Hs_stats has been run with the infinite parameter and will collect data until interrupted "
               "by key prompt (CTRL + C) or close the driver window\n")
     else:
         print(f"The script will now run for {args.number_of_iterations} iterations\n")
     try:
-        while (iteration < args.number_of_iterations) or args.infinity:
+        while (iteration < args.number_of_iterations) or infinity:
             iteration += 1
             print(f"Iteration {iteration} of {args.number_of_iterations}" * int(bool(args.number_of_iterations)), end='')
-            print(f"Iteration {iteration} of infinite number" * int(bool(args.infinity)))
+            print(f"Iteration {iteration} of infinite number" * int(bool(infinity)))
             print("Now scrapping matches from HsReplay live feed:\n")
             matches = feed_parser(args.quiet)
             print(f"Found {len(matches)} matches to parse")
