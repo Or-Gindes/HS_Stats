@@ -29,12 +29,11 @@ def get_driver(url, url_pattern, quiet=False):
         driver = open_driver(quiet)
         driver.get(url)
         # Use sub-function to verify internet connection
-        test_connection(driver)
+        test_connection(driver, quiet)
     except ConnectionError as err:
         print("Error!\n" + err.args[0])
         exit()
-    finally:
-        return driver
+    return driver
 
 
 def open_driver(quiet):

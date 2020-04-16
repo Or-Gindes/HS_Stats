@@ -86,10 +86,10 @@ def main():
                         insert_card_mechanics(card_name, card_info, con, engine)
                     print(f"\nExtracted all data from match {match_num}\n")
                     card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
-    except (WebDriverException, NoSuchWindowException, TypeError) as err:
+    except (WebDriverException, NoSuchWindowException, TypeError, IndexError) as err:
         print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
-              "for this error is you might have closed the driver window\nIf that is the case please consider "
-              "running the program in quite mode (-q) to suppress driver window pop-up\n")
+              "for this error is you might have closed the driver window or lost internet connection \nIf that is the "
+              "case please consider running the program in quite mode (-q) to suppress driver window pop-up\n")
         print(f"More information on error: {err.args[0]}")
         exit()
     except (KeyboardInterrupt, MaxRetryError):
