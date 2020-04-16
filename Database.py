@@ -9,7 +9,7 @@ import pymysql
 import pandas as pd
 from game_parser import game_parser
 from feed_parser import feed_parser
-from config import SET_RELEASE_DICT, USER, PASSWORD, HOST_NAME, DB_FILENAME
+from config import SET_RELEASE_DICT, USER, HOST_NAME, DB_FILENAME
 from datetime import date
 from sqlalchemy import create_engine
 
@@ -215,8 +215,9 @@ def create_tables(con, database_name):
 
 def main():
     """Function used to test the decks_table creation and handling functions"""
-    with pymysql.connect(host='localhost', user=USER, passwd=PASSWORD, db=DB_FILENAME) as con:
-        db_connection_str = f'mysql+pymysql://{USER}:{PASSWORD}@{HOST_NAME}/{DB_FILENAME}'
+    test_db_password = input('Password for MySQL: ')
+    with pymysql.connect(host='localhost', user=USER, passwd=test_db_password, db=DB_FILENAME) as con:
+        db_connection_str = f'mysql+pymysql://{USER}:{test_db_password}@{HOST_NAME}/{DB_FILENAME}'
         engine = create_engine(db_connection_str)
     feed_results = feed_parser()
     for iterations, match in enumerate(feed_results):

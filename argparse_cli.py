@@ -6,8 +6,7 @@ This function accepts argument from user regarding operational parameters
 """
 
 import argparse
-import getpass
-from config import MIN_NUM_OF_ARG, HOST_NAME, DB_FILENAME
+from config import HOST_NAME, DB_FILENAME
 
 
 def parse_args_cli():
@@ -17,8 +16,8 @@ def parse_args_cli():
     infinity parameter - boolean, when set to True ill collect data until interrupt
     quiet parameter - boolean, when set to True will suppress driver window popup
     number of readings parameter - int, when not run in infinity mode, determine number of iterations
-    localhostname - user's host name, defaults to 'localhost'
-    password - user's password to MySQL server, defaults to 'root'
+    hostname - user's host name, defaults to 'localhost'
+    password - user's password to MySQL server
     dbname - name of database, default is 'hs_stats'
     overwrite option - boolean, when set to True will overwrite existing database
     """
@@ -34,10 +33,11 @@ def parse_args_cli():
     parser.add_argument('-q', '--quiet', action='store_true', default=False, help='Quiet mode. Use flag to \
                                                                                   suppress driver window popup')
     # MySQL and DB arguments
-    parser.add_argument('-l', '--localhostname', type=str, default=HOST_NAME,
+    parser.add_argument('-l', '--hostname', type=str, default=HOST_NAME,
                         help='Use flag to set user\'s host name, defaults to %s '
                              '(default can be changed in config file)' % HOST_NAME)
 
+    parser.add_argument('-p', '--password', type=str, help='Password for MySQL server')
     parser.add_argument('-d', '--dbname', type=str, default=DB_FILENAME,
                         help='Use flag to set name of database to create and/or use, default is "%s" '
                              '(default can be changed in config file)' % DB_FILENAME)
@@ -47,16 +47,20 @@ def parse_args_cli():
                                                                             Use this flag to overwrite it instead')
     args = parser.parse_args()
 
-    summary_of_run_args = bool(args.infinity) + bool(args.number_of_iterations)
-    if summary_of_run_args < MIN_NUM_OF_ARG:
-        parser.error("Too few arguments provided")
+    if not bool(args.number_of_iterations):
+        args.infinity = True
+
     if args.infinity == bool(args.number_of_iterations):
         parser.error("Invalid input provided.\
         \nPlease, choose exactly one operation mode: Infinity mode (-i) for indefinite data collection or "
                      "specify desired number of iterations (-n <NUMBER>)")
-    PASSWORD = getpass.getpass('Input password for your MySQL server: ')
-    return [args.infinity, args.number_of_iterations, args.quiet,
-            args.localhostname, PASSWORD, args.dbname, args.overwrite]
+
+    if not args.password:
+        parser.error('Invalid input.\nPlease, provide password for MySQL')
+    print(f'The program will iterate {args.number_of_iterations} times' * int(args.number_of_iterations > 0), end='')
+    print(f'Since you provided not proper number {args.number_of_iterations}, the program will not run' \
+          * int(args.number_of_iterations <= 0) * (1 - int(args.infinity)))
+    return args
 
 
 if __name__ == '__main__':

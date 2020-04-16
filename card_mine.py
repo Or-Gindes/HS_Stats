@@ -20,7 +20,7 @@ def from_database(card_name, db_params):
     :param db_params: database parameters for connection
     :return: card data from database
     """
-    db_connection_str = f'mysql+pymysql://{USER}:{db_params.password}@{db_params.localhostname}/{db_params.dbname}'
+    db_connection_str = f'mysql+pymysql://{USER}:{db_params.password}@{db_params.hostname}/{db_params.dbname}'
     engine = create_engine(db_connection_str)
     sql_query = f'SELECT * FROM Cards WHERE Card_Name = "{card_name}"'
     card = pd.read_sql_query(sql_query, engine)

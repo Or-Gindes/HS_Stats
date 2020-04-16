@@ -24,7 +24,7 @@ def initialize_db(db_params):
     :param db_params: holds information to connect to users MySQL Database
     """
     try:  # try connecting using given database_parameters
-        with pymysql.connect(host=db_params.localhostname, user=USER, passwd=db_params.password) as con:
+        with pymysql.connect(host=db_params.hostname, user=USER, passwd=db_params.password) as con:
             if db_params.overwrite:  # if overwrite - try to drop database
                 con.execute(f"DROP DATABASE {db_params.dbname}")
                 print("Old database found and deleted\n")
@@ -56,7 +56,8 @@ def main():
     try:
         while (iteration < args.number_of_iterations) or args.infinity:
             iteration += 1
-            print(f"Iteration {iteration} of {args.number_of_iterations}")
+            print(f"Iteration {iteration} of {args.number_of_iterations}" * int(bool(args.number_of_iterations)), end='')
+            print(f"Iteration {iteration} of infinite number" * int(bool(args.infinity)))
             print("Now scrapping matches from HsReplay live feed:\n")
             matches = feed_parser(args.quiet)
             print(f"Found {len(matches)} matches to parse")
@@ -74,8 +75,8 @@ def main():
                 print("\nDatabase is updated with the Losing Deck of the match:")
                 print(loser_deck)
                 print("\n")
-                with pymysql.connect(host=args.localhostname, user=USER, passwd=args.password, db=args.dbname) as con:
-                    db_connection_str = f'mysql+pymysql://{USER}:{args.password}@{args.localhostname}/{args.dbname}'
+                with pymysql.connect(host=args.hostname, user=USER, passwd=args.password, db=args.dbname) as con:
+                    db_connection_str = f'mysql+pymysql://{USER}:{args.password}@{args.hostname}/{args.dbname}'
                     engine = create_engine(db_connection_str)
                     insert_decks(winner_deck, loser_deck, con)
                     insert_matches(match_url, winner, loser, con)
