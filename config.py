@@ -15,6 +15,7 @@ WINDOW_SIZE = '1920,1080'
 CHROME_PATH_WIN_10 = r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
 CHROME_PATH_WIN_7 = r'C:\Program Files (x86)\Google\Application\chrome.exe'
 CHROME_PATH_LINUX = r'/usr/bin/google-chrome'
+ERROR_MSG = 'Could not establish internet connection'
 
 """URL Constants"""
 FEED_URL_PATTERN = r'https://hsreplay.net/'

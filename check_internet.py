@@ -8,7 +8,7 @@ and returns True for connection established or False after multiple failed attem
 
 from time import sleep
 from selenium.common.exceptions import NoSuchElementException
-from config import WAIT, N_ATTEMPTS, NO_INTERNET_PATTERN
+from config import WAIT, N_ATTEMPTS, NO_INTERNET_PATTERN, ERROR_MSG
 
 
 def test_connection(driver, quiet):
@@ -25,10 +25,11 @@ def test_connection(driver, quiet):
             attempt += 1
             # Try to find elements of the Chrome "Page not found" page - if successful that means no internet found
             driver.find_element_by_xpath(NO_INTERNET_PATTERN)
+            print(f"{ERROR_MSG} - Making another attempt")
             sleep(WAIT)  # if no internet - wait WAIT seconds and attempt again
             if attempt > N_ATTEMPTS:
-                raise ConnectionError("Could not establish internet connection")
+                raise ConnectionError(ERROR_MSG)
         except NoSuchElementException:
             if quiet and driver.page_source == '<html><head></head><body></body></html>':
-                raise ConnectionError("Could not establish internet connection")
+                raise ConnectionError(ERROR_MSG)
             return True
