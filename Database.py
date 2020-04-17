@@ -31,44 +31,66 @@ def insert_matches(match_url, winner, loser, con):
     VALUES ("{match_url}", "{deck_id}", "{deck_id - 1}", "{winner_rank}", "{looser_rank}")')
 
 
-def insert_card(name, card_dict, con, engine):
+def insert_card(name, card_dict, con):
     """
     This function gets the card's name and details and inserts it into the cards database,
     unless it's there already
     :param name: name of the card
     :param card_dict: card info in dictionary format
     :param con: connection object to mysql database
-    :param engine: pymysql connection object
     """
-    df = pd.read_sql_query(f'SELECT 1 FROM Cards WHERE Card_Name = "{name}"', engine)
-    if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
-        insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, 
-                                Artist, Mana_Cost, Attack, Health) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+    con.execute(f'SELECT 1 FROM Cards WHERE Card_Name = "{name}"')
+    search_card_name = con.fetchall()
+    if np.shape(search_card_name) == (0,):  # This means the card was not found in the database and should be inserted
         try:
             card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
         except KeyError:
             # if a new set was released and isn't found in the dictionary the current year will be taken
             card_dict['Release Year'] = date.today().year
-        insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
-                         card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
-                         card_dict['Attack'], card_dict['Health']]
-        con.execute(insert_command, insert_values)
+        con.execute(f'INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, \
+                                Artist, Mana_Cost, Attack, Health) \
+                                VALUES ("{name}", "{card_dict["Class"]}", "{card_dict["Type"]}", "{card_dict["Rarity"]}",\
+                                "{card_dict["Set"]}", "{card_dict["Release Year"]}", "{card_dict["Cost"]}", \
+                                "{card_dict["Artist"]}", "{card_dict["Mana Cost"]}", "{card_dict["Attack"]}", "{card_dict["Health"]}")')
         print(f"{name} was put into the database")
 
+# OLD version:
+# def insert_card(name, card_dict, con, engine):
+#     """
+#     This function gets the card's name and details and inserts it into the cards database,
+#     unless it's there already
+#     :param name: name of the card
+#     :param card_dict: card info in dictionary format
+#     :param con: connection object to mysql database
+#     :param engine: pymysql connection object
+#     """
+#     df = pd.read_sql_query(f'SELECT 1 FROM Cards WHERE Card_Name = "{name}"', engine)
+#     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
+#         insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost,
+#                                 Artist, Mana_Cost, Attack, Health) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+#         try:
+#             card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
+#         except KeyError:
+#             # if a new set was released and isn't found in the dictionary the current year will be taken
+#             card_dict['Release Year'] = date.today().year
+#         insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
+#                          card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
+#                          card_dict['Attack'], card_dict['Health']]
+#         con.execute(insert_command, insert_values)
+#         print(f"{name} was put into the database")
 
 def insert_mechanics(card_info, con):
     """
     Insert into mechanics table any new mechanics found on cards
     :param card_info: card info in dictionary format
     :param con: connection object to mysql database
-    :param engine: pymysql connection object
     """
     mechanics_list = card_info['Mechanics']
     for mechanic in mechanics_list:
         con.execute(f'select 1 from Mechanics where mechanic_name = "{mechanic}"')
         search_mechanic_name = con.fetchall()
         if np.shape(search_mechanic_name) == (0,):
-            con.execute(f'INSERT INTO Mechanics (Mechanic_Name) VALUES ("{mechanic})')
+            con.execute(f'INSERT INTO Mechanics (Mechanic_Name) VALUES ("{mechanic}")')
 
 
 def insert_card_mechanics(card_name, card_info, con):
@@ -77,7 +99,6 @@ def insert_card_mechanics(card_name, card_info, con):
     :param card_name: name of the card
     :param card_info: card info in dictionary format
     :param con: connection object to mysql database
-    :param engine: pymysql connection object
     """
     con.execute(f'SELECT Card_ID, Card_Name FROM Cards WHERE Card_Name = "{card_name}"')
     card_id = con.fetchall()[0][0]
@@ -216,7 +237,7 @@ def main():
     test_db_password = input('Password for MySQL: ')
     with pymysql.connect(host='localhost', user=USER, passwd=test_db_password, db=DB_FILENAME) as con:
         db_connection_str = f'mysql+pymysql://{USER}:{test_db_password}@{HOST_NAME}/{DB_FILENAME}'
-        engine = create_engine(db_connection_str)
+        engine = create_engine(db_connection_str) # TODO: eliminate?
     feed_results = feed_parser()
     for iterations, match in enumerate(feed_results):
         match_url, winner, loser = match[0], match[1], match[2]
@@ -229,7 +250,7 @@ def main():
         insert_decks(winner_deck, loser_deck, con)
         insert_matches(match_url, winner, loser, con)
         for card_name, card_info in mined_cards.items():
-            insert_card(card_name, card_info, con, engine)
+            insert_card(card_name, card_info, con)
             insert_mechanics(card_info, con)
             insert_card_mechanics(card_name, card_info, con)
         card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], con)

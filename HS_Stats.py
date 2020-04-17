@@ -79,11 +79,11 @@ def main():
                 print("\n")
                 with pymysql.connect(host=args.hostname, user=USER, passwd=args.password, db=args.dbname) as con:
                     db_connection_str = f'mysql+pymysql://{USER}:{args.password}@{args.hostname}/{args.dbname}'
-                    engine = create_engine(db_connection_str)
+                    engine = create_engine(db_connection_str) # TODO: eliminate?
                     insert_decks(winner_deck, loser_deck, con)
                     insert_matches(match_url, winner, loser, con)
                     for card_name, card_info in mined_cards.items():
-                        insert_card(card_name, card_info, con, engine)
+                        insert_card(card_name, card_info, con)
                         insert_mechanics(card_info, con)
                         insert_card_mechanics(card_name, card_info, con)
                     print(f"\nExtracted all data from match {match_num}\n")
