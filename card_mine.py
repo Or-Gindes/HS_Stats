@@ -52,7 +52,7 @@ def card_mine(url, card_name):
     :param card_name: name of the card mined in game_parser
     :return: mine card data and organise into dictionary
     """
-    args = parse_args_cli()
+    args, infinity = parse_args_cli()
     card = from_database(card_name, args)  # Check if card is already found in database
     if card.shape[0] == 1:  # This means the card was found in the database and scraping can be skipped
         print(f'Card data for "{card_name}" was pulled from database')
