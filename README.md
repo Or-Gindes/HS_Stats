@@ -176,15 +176,16 @@ deactivate
 1. This project utilizes a CLI, allowing you to customize the program's behaviour:
     
     1. Program Behaviour arguments:
-        1. First argument is '-i' - type it if you want the web-scraper to run an infinite number of times.
-        2. Second argument is '-n' - type it with a number attached (for example -n5) to run the web-scraper n times (5 in this case).
-            * You can't use both the '-i' and '-n' arguments. 
-        3. Third argument is '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower).
+        1. Argument '-n' - type it with a positive number attached (for example -n5) to run the web-scraper n times (5 in this case).
+            * If the number zero is provided, the scrapper will run infinitely (until interrupted).
+            * If a negative number is provided, the scrapper will simply not run. 
+            * If no number is provided, the scrapper will run infinitely (until interrupted). 
+        2. Argument '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower).
     2. Database arguments:
-        1. Fourth argument is '-l' - the hostname - default is set to 'localhost'.
-        2. Fifth argument is '-p' - the password - default is set to 'root'.
-        3. Sixth argument is '-d' - the database name - default is set to 'HS_Stats'.
-        4. Seventh argument is '-o' - overwriting option - If you want to overwrite your existing table. 
+        1. Argument '-l' - the hostname - default is set to 'localhost'.
+        2. Argument '-p' - the password - default is set to 'root'.
+        3. Argument '-d' - the database name - default is set to 'HS_Stats'.
+        4. Argument '-o' - overwriting option - If you want to overwrite your existing table. 
         
     * Reminder: An iteration equals to one live feed parsing. 
 

@@ -27,7 +27,7 @@ def parse_args_cli():
     # Run arguments
     parser.add_argument('-n', '--number_of_iterations', type=int, default=0, help='Determines the number of '
                                                                                   'scraping iterations. If not given, '
-                                                                                  'the parser will iterate infinite'
+                                                                                  'the parser will iterate infinite '
                                                                                   'number of times')
     parser.add_argument('-q', '--quiet', action='store_true', default=False, help='Quiet mode. Use flag to \
                                                                                   suppress driver window popup')
