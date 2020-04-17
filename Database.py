@@ -64,7 +64,7 @@ def insert_mechanics(card_info, con):
     """
     mechanics_list = card_info['Mechanics']
     for mechanic in mechanics_list:
-        con.execute(f'select 1 from Mechanics where mechanic_name = "{mechanic}"')
+        con.execute(f'select 1 from Mechanics where Mechanic_Name = "{mechanic}"')
         search_mechanic_name = con.fetchall()
         if np.shape(search_mechanic_name) == (0,):
             con.execute(f'INSERT INTO Mechanics (Mechanic_Name) VALUES ("{mechanic}")')
@@ -84,9 +84,9 @@ def insert_card_mechanics(card_name, card_info, con):
     if np.shape(search_card_id) == (0,):
         mechanics_list = card_info['Mechanics']
         for mechanic in mechanics_list:
-            con.execute(f'SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = "{mechanic}"')
+            con.execute(f'SELECT Mechanic_ID FROM Mechanics WHERE Mechanic_Name = "{mechanic}"')
             mechanics_id = con.fetchall()[0][0]
-            con.execute(f'INSERT INTO card_mechanics (card_id, mechanic_id) VALUES ("{card_id}", "{mechanics_id}")')
+            con.execute(f'INSERT INTO Card_Mechanics (Card_ID, Mechanic_ID) VALUES ("{card_id}", "{mechanics_id}")')
 
 
 def insert_decks(winner_deck, loser_deck, con):
@@ -191,20 +191,19 @@ def create_tables(con, database_name):
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
         PRIMARY KEY (ID))'''
     create_table_mechanics = '''CREATE TABLE Mechanics (
-        Mechanics_ID INT AUTO_INCREMENT,
+        Mechanic_ID INT AUTO_INCREMENT,
         Mechanic_Name VARCHAR(100),
-        PRIMARY KEY (Mechanics_ID))'''
+        PRIMARY KEY (Mechanic_ID))'''
     create_table_card_mechanics = '''CREATE TABLE Card_Mechanics (
-        Card_Mechanics_ID INT AUTO_INCREMENT,
+        Card_Mechanic_ID INT AUTO_INCREMENT,
         Card_ID INT,
         Mechanic_ID INT,
         FOREIGN KEY(Card_ID) REFERENCES Cards(Card_ID),
-        FOREIGN KEY(Mechanic_ID) REFERENCES Mechanics(Mechanics_ID),
-        PRIMARY KEY (Card_Mechanics_ID))'''
+        FOREIGN KEY(Mechanic_ID) REFERENCES Mechanics(Mechanic_ID),
+        PRIMARY KEY (Card_Mechanic_ID))'''
     use_command = f"USE {database_name}"
     table_commands = [use_command, create_table_decks, create_table_matches, create_table_cards,
-                      create_table_card_in_deck,
-                      create_table_mechanics, create_table_card_mechanics]
+                      create_table_card_in_deck, create_table_mechanics, create_table_card_mechanics]
     for command in table_commands:
         con.execute(command)
 

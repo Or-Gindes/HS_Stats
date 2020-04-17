@@ -26,10 +26,9 @@ def card_api(name):
         response = requests.request("GET", API_BASE_URL + name, headers=HEADERS, params=QUERYSTRING)
         status_code = response.status_code
         if response.status_code != STATUS_CODE_OK:
-            key = input("Could not connect to API, Please verify internet connection and that the API key is the "
-                        "config file is correct, than press any key to continue or 'x' to exit\n")
-            if key == 'x':
-                exit()
+            print("Could not connect to API, Please verify internet connection and that the API key is "
+                  "the config file is correct, than press any key to continue or 'x' to exit\n")
+            exit()
     response = format_response(response)
     try:
         mechanics_list = [mechanic['name'] for mechanic in response['mechanics']]
