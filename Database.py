@@ -6,7 +6,6 @@ This function concentrates all database related functions - table creation
 """
 
 import pymysql
-import pandas as pd
 from game_parser import game_parser
 from feed_parser import feed_parser
 from config import SET_RELEASE_DICT, USER, HOST_NAME, DB_FILENAME
@@ -53,38 +52,8 @@ def insert_card(name, card_dict, con):
                          card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
                          card_dict['Attack'], card_dict['Health']]
         con.execute(insert_command, insert_values)
-        # got problems for command below
-        # con.execute(f'INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, \
-        #                         Artist, Mana_Cost, Attack, Health) \
-        #                         VALUES ("{name}", "{card_dict["Class"]}", "{card_dict["Type"]}", "{card_dict["Rarity"]}",\
-        #                         "{card_dict["Set"]}", "{card_dict["Release Year"]}", "{card_dict["Cost"]}", \
-        #                         "{card_dict["Artist"]}", "{card_dict["Mana Cost"]}", "{card_dict["Attack"]}", "{card_dict["Health"]}")')
         print(f"{name} was put into the database")
 
-# OLD version:
-# def insert_card(name, card_dict, con, engine):
-#     """
-#     This function gets the card's name and details and inserts it into the cards database,
-#     unless it's there already
-#     :param name: name of the card
-#     :param card_dict: card info in dictionary format
-#     :param con: connection object to mysql database
-#     :param engine: pymysql connection object
-#     """
-#     df = pd.read_sql_query(f'SELECT 1 FROM Cards WHERE Card_Name = "{name}"', engine)
-#     if df.shape[0] == 0:  # This means the card was not found in the database and should be inserted
-#         insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost,
-#                                 Artist, Mana_Cost, Attack, Health) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-#         try:
-#             card_dict['Release Year'] = SET_RELEASE_DICT[card_dict['Set']]
-#         except KeyError:
-#             # if a new set was released and isn't found in the dictionary the current year will be taken
-#             card_dict['Release Year'] = date.today().year
-#         insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
-#                          card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
-#                          card_dict['Attack'], card_dict['Health']]
-#         con.execute(insert_command, insert_values)
-#         print(f"{name} was put into the database")
 
 def insert_mechanics(card_info, con):
     """
