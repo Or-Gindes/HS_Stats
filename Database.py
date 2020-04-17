@@ -47,11 +47,18 @@ def insert_card(name, card_dict, con):
         except KeyError:
             # if a new set was released and isn't found in the dictionary the current year will be taken
             card_dict['Release Year'] = date.today().year
-        con.execute(f'INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, \
-                                Artist, Mana_Cost, Attack, Health) \
-                                VALUES ("{name}", "{card_dict["Class"]}", "{card_dict["Type"]}", "{card_dict["Rarity"]}",\
-                                "{card_dict["Set"]}", "{card_dict["Release Year"]}", "{card_dict["Cost"]}", \
-                                "{card_dict["Artist"]}", "{card_dict["Mana Cost"]}", "{card_dict["Attack"]}", "{card_dict["Health"]}")')
+        insert_command = '''INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost,
+                                        Artist, Mana_Cost, Attack, Health) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+        insert_values = [name, card_dict['Class'], card_dict['Type'], card_dict['Rarity'], card_dict['Set'],
+                         card_dict['Release Year'], card_dict['Cost'], card_dict['Artist'], card_dict['Mana Cost'],
+                         card_dict['Attack'], card_dict['Health']]
+        con.execute(insert_command, insert_values)
+        # got problems for command below
+        # con.execute(f'INSERT INTO Cards (Card_name, Class, Type, Rarity, Card_set, Release_year, Cost, \
+        #                         Artist, Mana_Cost, Attack, Health) \
+        #                         VALUES ("{name}", "{card_dict["Class"]}", "{card_dict["Type"]}", "{card_dict["Rarity"]}",\
+        #                         "{card_dict["Set"]}", "{card_dict["Release Year"]}", "{card_dict["Cost"]}", \
+        #                         "{card_dict["Artist"]}", "{card_dict["Mana Cost"]}", "{card_dict["Attack"]}", "{card_dict["Health"]}")')
         print(f"{name} was put into the database")
 
 # OLD version:
