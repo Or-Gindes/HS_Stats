@@ -12,6 +12,7 @@ from feed_parser import feed_parser
 from config import SET_RELEASE_DICT, USER, HOST_NAME, DB_FILENAME
 from datetime import date
 from sqlalchemy import create_engine
+import numpy as np
 
 
 def insert_matches(match_url, winner, loser, con):
@@ -26,10 +27,8 @@ def insert_matches(match_url, winner, loser, con):
     deck_id = con.fetchall()[0][0]
     winner_rank = winner[1]
     looser_rank = loser[1]
-    insert_command = '''INSERT INTO Matches (
-        Match_URL, Winner_Deck_ID, Looser_Deck_ID, Winner_Player_Rank, Looser_Player_Rank) VALUES (%s, %s, %s, %s, %s)'''
-    insert_values = [match_url, deck_id, deck_id - 1, winner_rank, looser_rank]
-    con.execute(insert_command, insert_values)
+    con.execute(f'INSERT INTO Matches (Match_URL, Winner_Deck_ID, Looser_Deck_ID, Winner_Player_Rank, Looser_Player_Rank)\
+    VALUES ("{match_url}", "{deck_id}", "{deck_id - 1}", "{winner_rank}", "{looser_rank}")')
 
 
 def insert_card(name, card_dict, con, engine):
@@ -57,7 +56,7 @@ def insert_card(name, card_dict, con, engine):
         print(f"{name} was put into the database")
 
 
-def insert_mechanics(card_info, con, engine):
+def insert_mechanics(card_info, con):
     """
     Insert into mechanics table any new mechanics found on cards
     :param card_info: card info in dictionary format
@@ -65,14 +64,14 @@ def insert_mechanics(card_info, con, engine):
     :param engine: pymysql connection object
     """
     mechanics_list = card_info['Mechanics']
-    insert_command = '''INSERT INTO Mechanics (Mechanic_Name) VALUES (%s)'''
     for mechanic in mechanics_list:
-        df = pd.read_sql_query(f'SELECT 1 FROM Mechanics WHERE Mechanic_Name = "{mechanic}"', engine)
-        if df.shape[0] == 0:  # This means that this mechanic was not found in Mechanics and should be inserted
-            con.execute(insert_command, mechanic)
+        con.execute(f'select 1 from Mechanics where mechanic_name = "{mechanic}"')
+        search_mechanic_name = con.fetchall()
+        if np.shape(search_mechanic_name) == (0,):
+            con.execute(f'INSERT INTO Mechanics (Mechanic_Name) VALUES ("{mechanic})')
 
 
-def insert_card_mechanics(card_name, card_info, con, engine):
+def insert_card_mechanics(card_name, card_info, con):
     """
     insert into the connection table rows which connect between card_id and mechanic_id
     :param card_name: name of the card
@@ -82,16 +81,14 @@ def insert_card_mechanics(card_name, card_info, con, engine):
     """
     con.execute(f'SELECT Card_ID, Card_Name FROM Cards WHERE Card_Name = "{card_name}"')
     card_id = con.fetchall()[0][0]
-    # searching for this card_ID in Card_Mechanics table:
-    df = pd.read_sql_query(f'SELECT 1 FROM Card_Mechanics WHERE Card_ID = "{card_id}"', engine)
-    if df.shape[0] == 0:  # This means the Card_ID was not found in Card_Mechanics and it's mechanics should be inserted
+    con.execute(f'SELECT 1 FROM Card_Mechanics WHERE Card_ID = "{card_id}"')
+    search_card_id = con.fetchall()
+    if np.shape(search_card_id) == (0,):
         mechanics_list = card_info['Mechanics']
         for mechanic in mechanics_list:
             con.execute(f'SELECT Mechanics_ID FROM Mechanics WHERE Mechanic_Name = "{mechanic}"')
             mechanics_id = con.fetchall()[0][0]
-            insert_command = 'INSERT INTO Card_Mechanics (Card_ID, Mechanic_ID) VALUES (%s, %s)'
-            insert_values = [card_id, mechanics_id]
-            con.execute(insert_command, insert_values)
+            con.execute(f'INSERT INTO card_mechanics (card_id, mechanic_id) VALUES ("{card_id}", "{mechanics_id}")')
 
 
 def insert_decks(winner_deck, loser_deck, con):
@@ -207,7 +204,8 @@ def create_tables(con, database_name):
         FOREIGN KEY(Mechanic_ID) REFERENCES Mechanics(Mechanics_ID),
         PRIMARY KEY (Card_Mechanics_ID))'''
     use_command = f"USE {database_name}"
-    table_commands = [use_command, create_table_decks, create_table_matches, create_table_cards, create_table_card_in_deck,
+    table_commands = [use_command, create_table_decks, create_table_matches, create_table_cards,
+                      create_table_card_in_deck,
                       create_table_mechanics, create_table_card_mechanics]
     for command in table_commands:
         con.execute(command)
@@ -232,8 +230,8 @@ def main():
         insert_matches(match_url, winner, loser, con)
         for card_name, card_info in mined_cards.items():
             insert_card(card_name, card_info, con, engine)
-            insert_mechanics(card_info, con, engine)
-            insert_card_mechanics(card_name, card_info, con, engine)
+            insert_mechanics(card_info, con)
+            insert_card_mechanics(card_name, card_info, con)
         card_in_deck_update(winner_deck['Cards'], loser_deck['Cards'], con)
         if iterations == 1:
             break

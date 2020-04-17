@@ -52,11 +52,13 @@ def main():
         print("Warning! Hs_stats has been run with the infinite parameter and will collect data until interrupted "
               "by key prompt (CTRL + C) or close the driver window\n")
     else:
-        print(f"The script will now run for {args.number_of_iterations} iterations\n")
+        print(f"The script will now run for {args.number_of_iterations} iteration" +
+              "s" * (int(bool(args.number_of_iterations > 1))) + "\n")
     try:
         while (iteration < args.number_of_iterations) or infinity:
             iteration += 1
-            print(f"Iteration {iteration} of {args.number_of_iterations}" * int(bool(args.number_of_iterations)), end='')
+            print(f"Iteration {iteration} of {args.number_of_iterations}" * int(bool(args.number_of_iterations)),
+                  end='')
             print(f"Iteration {iteration} of infinite number" * int(bool(infinity)))
             print("Now scrapping matches from HsReplay live feed:\n")
             matches = feed_parser(args.quiet)
@@ -82,8 +84,8 @@ def main():
                     insert_matches(match_url, winner, loser, con)
                     for card_name, card_info in mined_cards.items():
                         insert_card(card_name, card_info, con, engine)
-                        insert_mechanics(card_info, con, engine)
-                        insert_card_mechanics(card_name, card_info, con, engine)
+                        insert_mechanics(card_info, con)
+                        insert_card_mechanics(card_name, card_info, con)
                     print(f"\nExtracted all data from match {match_num}\n")
                     card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
     except (WebDriverException, NoSuchWindowException, TypeError, IndexError) as err:
