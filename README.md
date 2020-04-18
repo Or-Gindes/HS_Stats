@@ -147,7 +147,7 @@ speed and connection conditions (for example when extracting an element that tak
         * After registering your API key should appear (see screenshot), copy it.
         ![image info](api1.png)
         * In the config.py file (The configuration file of the project) under the API section, you'll see a variable named HEADERS.
-        * In the highlighted line, replace the <INSET API KEY HERE> expression with the copied API key (quotation marks must stay).
+        * In the highlighted line, replace the < INSERT KEY HERE > expression with the copied API key (quotation marks must stay).
         ![image info](api2.png)
         
 2. Create a directory for the project. 
@@ -183,7 +183,7 @@ deactivate
         2. Argument '-q' - quiet mode - use it to suppress the opening of browser windows (Warning - makes the scraper slower).
     2. Database arguments:
         1. Argument '-l' - the hostname - default is set to 'localhost'.
-        2. Argument '-p' - the password - default is set to 'root'.
+        2. Argument '-p' - the password - required. 
         3. Argument '-d' - the database name - default is set to 'HS_Stats'.
         4. Argument '-o' - overwriting option - If you want to overwrite your existing table. 
         
