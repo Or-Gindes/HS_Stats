@@ -1,6 +1,6 @@
 """
 ITC Data-Mining Project
-By: Or Gindes, Dor Sklar
+By: Or Gindes, Dor Sklar & Mariia Padalko
 
 This function parses the data of a single card from the cards Hsreplay page
 """

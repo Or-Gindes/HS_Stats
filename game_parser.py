@@ -9,7 +9,7 @@ from get_driver import get_driver
 from _collections import defaultdict
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
-from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT, MATCH_DATA_LENGTH
+from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT, MATCH_DATA_LENGTH, DECK_KEYS
 from card_api import card_api
 
 
@@ -48,12 +48,10 @@ def format_deck(win_or_lose_deck, collected_deck):
         name, class_name = win_or_lose_deck[0].rsplit(' ', 2)[0], 'Demon Hunter'
     else:
         name, class_name = win_or_lose_deck[0].rsplit(' ', 1)[0], win_or_lose_deck[0].rsplit(' ', 1)[1]
-    return {'Deck': name, 'Class': class_name, 'Player Rank': win_or_lose_deck[1],
-            'Deck Cost': collected_deck['Deck Cost'],
-            'Average Card Cost': round(collected_deck['Total Mana Cost'] / CARDS_IN_DECK, 2),
-            'Most_Common_Set': collected_deck['Most_Common_Set'],
-            'Most_Common_Type': collected_deck['Most_Common_Type'],
-            'Cards': collected_deck['Cards']}
+    values = [name, class_name, win_or_lose_deck[1], collected_deck['Deck Cost'],
+              round(collected_deck['Total Mana Cost'] / CARDS_IN_DECK, 2), collected_deck['Most_Common_Set'],
+              collected_deck['Most_Common_Type'], collected_deck['Cards']]
+    return {DECK_KEYS[i]: values[i] for i in range(len(DECK_KEYS))}
 
 
 def get_decks(driver, winner_deck, loser_deck):

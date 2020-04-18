@@ -42,6 +42,8 @@ LATEST_SET_ALT = 'GLOBAL_CARD_SET_BLACK_TEMPLE'
 
 """Dictionary Key constants"""
 CARDS = 'Cards'
+DECK_KEYS = ['Deck', 'Class', 'Player Rank', 'Deck Cost', 'Average Card Cost', 'Most_Common_Set', 'Most_Common_Type',
+             'Cards']
 
 """CLI constants"""
 MIN_NUM_OF_ARG = 1

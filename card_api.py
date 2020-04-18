@@ -1,3 +1,10 @@
+"""
+ITC Data-Mining Project
+By: Or Gindes, Dor Sklar & Mariia Padalko
+
+This function uses an API to collect additional card data not found in the HSReplay website
+"""
+
 import requests
 import json
 from config import STATUS_CODE_OK, INDENT, API_BASE_URL, HEADERS, QUERYSTRING, SPACE, COMMA, DOTS, SEP

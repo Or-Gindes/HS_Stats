@@ -33,13 +33,13 @@ def parse_args_cli():
                                                                                   suppress driver window popup')
     # MySQL and DB arguments
     parser.add_argument('-l', '--hostname', type=str, default=HOST_NAME,
-                        help='Use flag to set user\'s host name, defaults to %s '
-                             '(default can be changed in config file)' % HOST_NAME)
+                        help=f'Use flag to set user\'s host name, defaults to "{HOST_NAME}" '
+                             '(default can be changed in config file)')
 
     parser.add_argument('-p', '--password', type=str, help='Password for MySQL server')
     parser.add_argument('-d', '--dbname', type=str, default=DB_FILENAME,
-                        help='Use flag to set name of database to create and/or use, default is "%s" '
-                             '(default can be changed in config file)' % DB_FILENAME)
+                        help=f'Use flag to set name of database to create and/or use, default is "{DB_FILENAME}" '
+                             '(default can be changed in config file)')
 
     parser.add_argument('-o', '--overwrite', action='store_true', default=False, help='By default script will update \
                                                                             the given database if it already exists. \
