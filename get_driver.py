@@ -44,6 +44,7 @@ def open_driver(quiet):
     """
     driver_path, chrome_path = chrome_os()
     chrome_options = webdriver.chrome.options.Options()
+    chrome_options.add_argument('--no-sandbox')
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
     try:
         if quiet:  # if quiet variable is True - set chrome potions to operate without window popup
@@ -54,9 +55,8 @@ def open_driver(quiet):
         driver = webdriver.Chrome(executable_path=driver_path, chrome_options=chrome_options)
     except (FileNotFoundError, common.exceptions.WebDriverException) as DriverError:
         print("Error in open_driver function!\n" + DriverError.args[0])
-        driver = False
-    finally:
-        return driver
+        exit()
+    return driver
 
 
 def chrome_os():
