@@ -163,7 +163,8 @@ cd project-directory-path
 python -m venv env
 
 # you must activate the environemnt first
-.\env\Scripts\activate
+Windows: .\env\Scripts\activate
+Linux:  source mypython/bin/activate
 
 # installing the required modules
 pip install -r requirements.txt
