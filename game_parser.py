@@ -117,10 +117,9 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
         try:
             winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
         except TypeError:
-            print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
-                  "for this error is you might have closed the driver window\nIf that is the case please consider "
-                  "running the program in quite mode (-q) to suppress driver window pop-up\n")
-            exit()
+            print("Failed to get match data because the match wasn't fully loaded - trying again")
+            mined_cards = False
+            # exit()
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 

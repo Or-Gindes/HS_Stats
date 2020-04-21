@@ -81,7 +81,7 @@ SEP = "%252C"
 
 HEADERS = {
     'x-rapidapi-host': "omgvamp-hearthstone-v1.p.rapidapi.com",
-    'x-rapidapi-key': "PLACE YOUR API KEY HERE"
+    'x-rapidapi-key': "9f8ac6b17fmsh4cf7559f8afc652p19a0fbjsn2d85fb0fc588"
 }
 
 QUERYSTRING = {"collectible": "1"}

@@ -44,6 +44,7 @@ def open_driver(quiet):
     """
     driver_path, chrome_path = chrome_os()
     chrome_options = webdriver.chrome.options.Options()
+    chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")  # overcome limited resource problems
     chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
     try:

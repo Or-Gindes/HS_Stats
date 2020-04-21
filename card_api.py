@@ -34,7 +34,7 @@ def card_api(name):
         status_code = response.status_code
         if response.status_code != STATUS_CODE_OK:
             print("Could not connect to API, Please verify internet connection and that the API key is "
-                  "the config file is correct, than press any key to continue or 'x' to exit\n")
+                  "the config file is correct")
             exit()
     response = format_response(response)
     try:
