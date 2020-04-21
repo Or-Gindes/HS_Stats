@@ -118,8 +118,8 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
             winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
         except TypeError:
             print("Failed to get match data because the match wasn't fully loaded - trying again")
+            driver = get_driver(url, MATCH_URL_PATTERN, quiet)
             mined_cards = False
-            # exit()
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 
