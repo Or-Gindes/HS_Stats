@@ -6,7 +6,7 @@ This is a general settings file to define constants
 """
 
 """Internet related Constants"""
-WAIT = 5  # How long to wait between connection attempts
+WAIT = 10  # How long to wait between connection attempts
 N_ATTEMPTS = 5  # How many connection attempts will the function make
 NO_INTERNET_PATTERN = '//span[@jsselect="heading" and @jsvalues=".innerHTML:msg"]'
 DRIVER_LINUX = 'chromedriver'
