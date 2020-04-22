@@ -96,8 +96,8 @@ def get_decks(driver, winner_deck, loser_deck):
     try:
         return winning_deck, losing_deck, mined_cards
     except NameError:
-        print("Bad input provided from feed parser")
-        exit()
+        print("Bad input provided from feed parser - moving on to next match")
+        return [False, False, mined_cards]
 
 
 def game_parser(url, winner_deck, loser_deck, quiet=False):
@@ -118,6 +118,7 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
             winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
         except TypeError:
             print("Failed to get match data because the match wasn't fully loaded - trying again")
+            driver.quit()
             driver = get_driver(url, MATCH_URL_PATTERN, quiet)
             mined_cards = False
     driver.quit()

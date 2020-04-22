@@ -7,7 +7,8 @@ This function uses an API to collect additional card data not found in the HSRep
 
 import requests
 import json
-from config import STATUS_CODE_OK, INDENT, API_BASE_URL, HEADERS, QUERYSTRING, SPACE, COMMA, DOTS, SEP
+from time import sleep
+from config import STATUS_CODE_OK, INDENT, API_BASE_URL, HEADERS, QUERYSTRING, SPACE, COMMA, DOTS, SEP, WAIT
 
 
 def format_response(response):
@@ -30,7 +31,12 @@ def card_api(name):
     status_code = 0
     name = name.replace(" ", SPACE).replace("'", COMMA).replace(":", DOTS).replace(",", SEP)
     while status_code != STATUS_CODE_OK:
-        response = requests.request("GET", API_BASE_URL + name, headers=HEADERS, params=QUERYSTRING)
+        sleep(WAIT)
+        try:
+            response = requests.request("GET", API_BASE_URL + name, headers=HEADERS, params=QUERYSTRING)
+        except requests.exceptions.ConnectionError:
+            print("API error - try replacing the API key")
+            exit()
         status_code = response.status_code
         if response.status_code != STATUS_CODE_OK:
             print("Could not connect to API, Please verify internet connection and that the API key is "
