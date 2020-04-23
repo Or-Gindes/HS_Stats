@@ -16,6 +16,7 @@ from Database import insert_card, insert_decks, insert_matches, create_database,
     insert_mechanics, insert_card_mechanics
 from config import SCHEME, CARDS, USER
 import pymysql
+import numpy as np
 
 
 def initialize_db(db_params):
@@ -54,49 +55,55 @@ def main():
         else:
             print(f"The script will now run for {args.number_of_iterations} iteration" +
                   "s" * (int(args.number_of_iterations > 1)) + "\n")
-        try:
-            while (iteration < args.number_of_iterations) or infinity:
-                iteration += 1
-                print(f"Iteration {iteration} of {args.number_of_iterations}" * int(bool(args.number_of_iterations)),
-                      end='')
-                print(f"Iteration {iteration} of infinite number" * int(infinity))
-                print("Now scrapping matches from HsReplay live feed:\n")
-                matches = feed_parser(args.quiet)
-                print(f"Found {len(matches)} matches to parse")
-                print("---------------------------------------\n")
-                for match_num, match in enumerate(matches, start=1):
-                    match_url, winner, loser = match[0], match[1], match[2]
-                    print(f"Now parsing match {match_num} of {len(matches)}")
-                    print(f"Match URL address is: {match_url}")
-                    print(f"{winner[0]} VS. {loser[0]} \n")
-                    winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, args.quiet)
-                    if (not winner_deck) and (not loser_deck):
-                        break
-                    print("\nDatabase updates:")
+        with pymysql.connect(host=args.hostname, user=USER, passwd=args.password, db=args.dbname) as con:
+            try:
+                while (iteration < args.number_of_iterations) or infinity:
+                    iteration += 1
+                    print(f"Iteration {iteration} of {args.number_of_iterations}" * int(bool(args.number_of_iterations))
+                          , end='')
+                    print(f"Iteration {iteration} of infinite number" * int(infinity))
+                    print("Now scrapping matches from HsReplay live feed:\n")
+                    matches = feed_parser(args.quiet)
+                    print(f"Found {len(matches)} matches to parse")
                     print("---------------------------------------\n")
-                    print("Database is updated with the Winning Deck of the match:")
-                    print(winner_deck)
-                    print("\nDatabase is updated with the Losing Deck of the match:")
-                    print(loser_deck)
-                    print("\n")
-                    with pymysql.connect(host=args.hostname, user=USER, passwd=args.password, db=args.dbname) as con:
-                        insert_decks(winner_deck, loser_deck, con)
-                        insert_matches(match_url, winner, loser, con)
-                        for card_name, card_info in mined_cards.items():
-                            insert_card(card_name, card_info, con)
-                            insert_mechanics(card_info, con)
-                            insert_card_mechanics(card_name, card_info, con)
-                        print(f"\nExtracted all data from match {match_num}\n")
-                        card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
-        except (WebDriverException, NoSuchWindowException, TypeError, IndexError) as err:
-            print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
-                  "for this error is you might have closed the driver window or lost internet connection \nIf that is "
-                  "the case please consider running the program in quite mode (-q) to suppress driver window pop-up\n")
-            print(f"More information on error: {err.args[0]}")
-            exit()
-        except (KeyboardInterrupt, MaxRetryError):
-            print("Thank you for using Hs Stats - HearthStone matches webscrapper")
-            exit()
+                    for match_num, match in enumerate(matches, start=1):
+                        match_url, winner, loser = match[0], match[1], match[2]
+                        con.execute(f'SELECT 1 FROM Matches WHERE Match_URL = "{match_url}"')
+                        search_match_url = con.fetchall()
+                        if np.shape(search_match_url) == (0,):  # This means the match was not found in database
+                            print(f"Now parsing match {match_num} of {len(matches)}")
+                            print(f"Match URL address is: {match_url}")
+                            print(f"{winner[0]} VS. {loser[0]} \n")
+                            winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, args.quiet)
+                            if (not winner_deck) and (not loser_deck):
+                                break
+                            print("\nDatabase updates:")
+                            print("---------------------------------------\n")
+                            print("Database is updated with the Winning Deck of the match:")
+                            print(winner_deck)
+                            print("\nDatabase is updated with the Losing Deck of the match:")
+                            print(loser_deck)
+                            print("\n")
+                            insert_decks(winner_deck, loser_deck, con)
+                            insert_matches(match_url, winner, loser, con)
+                            for card_name, card_info in mined_cards.items():
+                                insert_card(card_name, card_info, con)
+                                insert_mechanics(card_info, con)
+                                insert_card_mechanics(card_name, card_info, con)
+                            print(f"\nExtracted all data from match {match_num}\n")
+                            card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
+                        else:
+                            print("duplicate match located in database - skipping")
+            except (WebDriverException, NoSuchWindowException, TypeError, IndexError) as err:
+                print("\nError! something went wrong with the driver and the program could not continue!\nOne common "
+                      "cause for this error is you might have closed the driver window or lost internet connection\n"
+                      "If that is the case please consider running the program in quite mode (-q) to suppress driver "
+                      "window pop-up\n")
+                print(f"More information on error: {err.args[0]}")
+                exit()
+            except (KeyboardInterrupt, MaxRetryError):
+                print("Thank you for using Hs Stats - HearthStone matches webscrapper")
+                exit()
     else:
         print(f"Negative number of iterations {args.number_of_iterations} isn't valid - Please provide a valid input.")
 
