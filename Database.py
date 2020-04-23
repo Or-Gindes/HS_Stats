@@ -62,7 +62,10 @@ def insert_mechanics(card_info, con):
     :param card_info: card info in dictionary format
     :param con: connection object to mysql database
     """
-    mechanics_list = card_info['Mechanics']
+    try:
+        mechanics_list = card_info['Mechanics']
+    except KeyError:  # The card is already in the database and therefor so are its mechanics
+        return
     for mechanic in mechanics_list:
         con.execute(f'select 1 from Mechanics where Mechanic_Name = "{mechanic}"')
         search_mechanic_name = con.fetchall()
