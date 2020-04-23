@@ -12,6 +12,7 @@ from config import CARD_URL_PATTERN, VALID_DATA_LENGTH, WAIT, CARD_RELEVANT_DATA
 import pandas as pd
 from sqlalchemy import create_engine
 from argparse_cli import parse_args_cli
+from card_api import card_api
 
 
 def from_database(card_name, db_params):
@@ -66,6 +67,7 @@ def card_mine(url, card_name):
             sleep(WAIT)
             card_info = format_card(driver.find_elements_by_xpath('//aside[@class="infobox"]/ul[2]'))
         driver.quit()  # close driver when finished
+        card_info.update(card_api(card_name))
     return card_info  # return card info either way
 
 

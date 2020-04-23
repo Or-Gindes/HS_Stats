@@ -10,7 +10,6 @@ from _collections import defaultdict
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
 from config import MATCH_URL_PATTERN, CARDS_IN_DECK, WAIT, MATCH_DATA_LENGTH, DECK_KEYS
-from card_api import card_api
 
 
 def get_card(link, deck, mined_cards):
@@ -24,7 +23,6 @@ def get_card(link, deck, mined_cards):
     card_name = link.find_element_by_class_name("card-tile").get_attribute("aria-label")
     if card_name not in deck['Cards'].keys():
         card_dict = card_mine(card_url, card_name)
-        card_dict.update(card_api(card_name))
         try:
             count = int(link.find_element_by_class_name("card-count").get_attribute("innerHTML"))
         except (ValueError, NoSuchElementException):
