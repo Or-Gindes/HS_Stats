@@ -70,23 +70,24 @@ def main():
                     print(f"Match URL address is: {match_url}")
                     print(f"{winner[0]} VS. {loser[0]} \n")
                     winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, args.quiet)
-                    if winner_deck and loser_deck:
-                        print("\nDatabase updates:")
-                        print("---------------------------------------\n")
-                        print("Database is updated with the Winning Deck of the match:")
-                        print(winner_deck)
-                        print("\nDatabase is updated with the Losing Deck of the match:")
-                        print(loser_deck)
-                        print("\n")
-                        with pymysql.connect(host=args.hostname, user=USER, passwd=args.password, db=args.dbname) as con:
-                            insert_decks(winner_deck, loser_deck, con)
-                            insert_matches(match_url, winner, loser, con)
-                            for card_name, card_info in mined_cards.items():
-                                insert_card(card_name, card_info, con)
-                                insert_mechanics(card_info, con)
-                                insert_card_mechanics(card_name, card_info, con)
-                            print(f"\nExtracted all data from match {match_num}\n")
-                            card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
+                    if (not winner_deck) and (not loser_deck):
+                        break
+                    print("\nDatabase updates:")
+                    print("---------------------------------------\n")
+                    print("Database is updated with the Winning Deck of the match:")
+                    print(winner_deck)
+                    print("\nDatabase is updated with the Losing Deck of the match:")
+                    print(loser_deck)
+                    print("\n")
+                    with pymysql.connect(host=args.hostname, user=USER, passwd=args.password, db=args.dbname) as con:
+                        insert_decks(winner_deck, loser_deck, con)
+                        insert_matches(match_url, winner, loser, con)
+                        for card_name, card_info in mined_cards.items():
+                            insert_card(card_name, card_info, con)
+                            insert_mechanics(card_info, con)
+                            insert_card_mechanics(card_name, card_info, con)
+                        print(f"\nExtracted all data from match {match_num}\n")
+                        card_in_deck_update(winner_deck[CARDS], loser_deck[CARDS], con)
         except (WebDriverException, NoSuchWindowException, TypeError, IndexError) as err:
             print("\nError! something went wrong with the driver and the program could not continue!\nOne common cause "
                   "for this error is you might have closed the driver window or lost internet connection \nIf that is "
