@@ -60,10 +60,10 @@ def get_decks(driver, winner_deck, loser_deck):
     :return: use sub-function to mine cards based on links, format decks and return them with added information
     """
     match_info = driver.find_elements_by_class_name("card-list")
-    if len(match_info) < MATCH_DATA_LENGTH:  # indication of missing data
-        print("Failed to get match data, attempting again")
-        return False
     mined_cards = {}  # mined cards which were not seen before will be collected here
+    if len(match_info) < MATCH_DATA_LENGTH:  # indication of missing data
+        print("Bad input provided from feed parser - moving on to next match")
+        return [False, False, mined_cards]
     for deck_in_match in match_info:
         # define an empty deck to be filled and later format against winner/loser input
         deck = {'Class': 'Neutral', 'Deck Cost': 0, 'Total Mana Cost': 0, 'Cards': defaultdict(int)}
@@ -109,16 +109,8 @@ def game_parser(url, winner_deck, loser_deck, quiet=False):
     if quiet:
         print("Please wait while the game is being loaded...")
     driver = get_driver(url, MATCH_URL_PATTERN, quiet)
-    mined_cards = False
-    while mined_cards is False:
-        sleep(WAIT)  # Sleep is not required but useful when internet is unstable
-        try:
-            winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
-        except TypeError:
-            print("Failed to get match data because the match wasn't fully loaded - trying again")
-            driver.quit()
-            driver = get_driver(url, MATCH_URL_PATTERN, quiet)
-            mined_cards = False
+    sleep(WAIT)  # Sleep is not required but useful when internet is unstable
+    winner_deck, loser_deck, mined_cards = get_decks(driver, winner_deck, loser_deck)
     driver.quit()
     return winner_deck, loser_deck, mined_cards
 
