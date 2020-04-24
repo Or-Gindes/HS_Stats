@@ -69,8 +69,6 @@ def main():
                     print(f"Now parsing match {match_num} of {len(matches)}")
                     print(f"Match URL address is: {match_url}")
                     print(f"{winner[0]} VS. {loser[0]} \n")
-                    match_url = 'https://hsreplay.net/replay/nppbTxdB4eSWjC4qqc4RNW'
-                    winner, loser = ('Resurrect Priest', 'rank 1'), ('Dragon Hunter', 'rank 1')
                     winner_deck, loser_deck, mined_cards = game_parser(match_url, winner, loser, args.quiet)
                     if (not winner_deck) and (not loser_deck):
                         break
